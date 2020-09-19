@@ -8,6 +8,7 @@ import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import lombok.NonNull;
+import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.http.HttpHeaders;
@@ -51,6 +52,7 @@ public class MessengerPlatform extends RestPlatform {
 
     public void reply(@NonNull StateContext context, @NonNull String message) {
         val senderId = context.getContextId();
+        Log.debug("Replying to: " + senderId);
         val body = new JsonObject();
 
         val recipent = new JsonObject();
@@ -73,9 +75,8 @@ public class MessengerPlatform extends RestPlatform {
                 body,
                 headers);
 
-        // TODO: replace with logging
-        System.out.println("REPLY SENT");
-        System.out.println("STATUS: " + response.getStatus() + " " + response.getStatusText());
-        System.out.println(response.getBody());
+        Log.debug("REPLY SENT");
+        Log.debug("STATUS: " + response.getStatus() + " " + response.getStatusText());
+        Log.debug(response.getBody().toString());
     }
 }
