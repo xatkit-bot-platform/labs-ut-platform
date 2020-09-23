@@ -52,7 +52,7 @@ public class MessengerPlatform extends RestPlatform {
 
     public void reply(@NonNull StateContext context, @NonNull String message) {
         val senderId = context.getContextId();
-        Log.debug("Replying to: " + senderId);
+        Log.debug("REPLYING TO: {0}", senderId);
         val body = new JsonObject();
 
         val recipent = new JsonObject();
@@ -75,8 +75,6 @@ public class MessengerPlatform extends RestPlatform {
                 body,
                 headers);
 
-        Log.debug("REPLY SENT");
-        Log.debug("STATUS: " + response.getStatus() + " " + response.getStatusText());
-        Log.debug(response.getBody().toString());
+        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(),response.getBody().toString());
     }
 }
