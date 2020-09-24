@@ -2,7 +2,7 @@ package com.xatkit.plugins.messenger.platform;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import com.xatkit.core.XatkitCore;
+import com.xatkit.core.XatkitBot;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
@@ -28,12 +28,12 @@ public class MessengerPlatform extends RestPlatform {
     private String accessToken;
 
     @Override
-    public void start(@NonNull XatkitCore xatkitCore, @NonNull Configuration configuration) {
+    public void start(@NonNull XatkitBot xatkitBot, @NonNull Configuration configuration) {
         verifyToken = requireNonNull(configuration.getString(MessengerUtils.VERIFY_TOKEN_KEY));
         accessToken = requireNonNull(configuration.getString(MessengerUtils.ACCESS_TOKEN_KEY));
-        super.start(xatkitCore, configuration);
+        super.start(xatkitBot, configuration);
 
-        xatkitCore.getXatkitServer().registerRestEndpoint(HttpMethod.GET, "/messenger/webhook",
+        xatkitBot.getXatkitServer().registerRestEndpoint(HttpMethod.GET, "/messenger/webhook",
                 RestHandlerFactory.createEmptyContentRestHandler((headers, params, content) -> {
                     val mode = requireNonNull(HttpUtils.getParameterValue("hub.mode", params), "Missing mode");
                     val token = requireNonNull(HttpUtils.getParameterValue("hub.verify_token", params), "Missing token");

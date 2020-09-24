@@ -11,7 +11,6 @@ import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerRestHandler;
 import lombok.NonNull;
 import lombok.val;
-import org.apache.commons.configuration2.Configuration;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -34,8 +33,6 @@ import static java.util.Objects.requireNonNull;
  * @see MessengerRestHandler
  */
 public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatform, MessengerRestHandler> {
-    private MessengerRestHandler restHandler;
-
     /**
      * Constructs a {@link MessengerIntentProvider} and binds it to the provided {@code platform}.
      *
@@ -43,18 +40,6 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
      */
     public MessengerIntentProvider(final @NonNull MessengerPlatform platform) {
         super(platform);
-    }
-
-    @Override
-    public void start(final @NonNull Configuration configuration) {
-        this.restHandler = createRestHandler();
-        super.start(configuration);
-    }
-
-
-    @Override
-    public MessengerRestHandler getRestHandler() {
-        return restHandler;
     }
 
     /**
@@ -111,9 +96,10 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             val text = requireNonNull(message.getAsJsonObject().get("text"), "Message has no text").getAsString();
 
             try {
-                StateContext context = this.xatkitCore.getOrCreateContext(id);
+                StateContext context = this.xatkitBot.getOrCreateContext(id);
                 val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
-                        context, this.getRuntimePlatform().getXatkitCore());
+                        context, this.getRuntimePlatform().getXatkitBot());
+                recognizedIntent.getPlatformData().put("rawMessage", text);
                 this.sendEventInstance(recognizedIntent, context);
             } catch (IntentRecognitionProviderException e) {
                 throw new XatkitException("An internal error occurred when computing the intent, see attached exception", e);
