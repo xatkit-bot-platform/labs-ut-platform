@@ -20,8 +20,11 @@ import org.apache.http.entity.StringEntity;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
+import static com.xatkit.plugins.messenger.platform.MessengerUtils.calculateRFC2104HMAC;
 import static fr.inria.atlanmod.commons.Preconditions.checkArgument;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -65,17 +68,33 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 try {
                     checkArgument(nonNull(content), "Missing content.");
 
+                    if (!verifyValidation(headers, content))
+                        throw new RestHandlerException(403, "Incoming JSON has no validation code");
+
+
                     requireNonNull(content.getAsJsonObject().get("entry"), "Missing entry.")
                             .getAsJsonArray()
                             .iterator()
                             .forEachRemaining(entry -> handleWebhookEntry(entry));
 
                     return new StringEntity("RECEIVED", StandardCharsets.UTF_8);
-                } catch (NullPointerException | IllegalStateException | IllegalArgumentException e) {
+                } catch (NullPointerException | IllegalStateException | IllegalArgumentException | InvalidKeyException | NoSuchAlgorithmException e) {
                     throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, e.getMessage());
                 }
             }
         };
+    }
+
+    private boolean verifyValidation(final List<Header> headers, JsonElement content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
+        for (Header h : headers) {
+            if (h.getElements()[0].getName().equals("sha1")) {
+                if (!calculateRFC2104HMAC(content.toString(), runtimePlatform.getAppSecret()).equals(h.getElements()[0].getValue())) {
+                    throw new RestHandlerException(403, "Incoming JSON has incorrect validation code");
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleWebhookEntry(final JsonElement jsonElement) {
