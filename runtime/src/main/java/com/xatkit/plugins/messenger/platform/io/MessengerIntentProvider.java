@@ -7,7 +7,7 @@ import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
-import com.xatkit.plugins.messenger.platform.MessengerRestHandler;
+import com.xatkit.plugins.messenger.platform.server.MessengerRestHandler;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
 import lombok.NonNull;
 import lombok.val;
@@ -20,8 +20,6 @@ import org.apache.http.entity.StringEntity;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -65,18 +63,15 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             public HttpEntity handleParsedContent(
                     final @Nonnull List<Header> headers,
                     final @Nonnull List<NameValuePair> params,
-                    final @Nullable JsonElement content
+                    final @Nullable MessengerContent content
             ) throws RestHandlerException {
                 try {
                     checkArgument(nonNull(content), "Missing content.");
+                    verifyValidation(headers, content.getRawContent());
 
-                    if (!verifyValidation(headers, content))
-                        throw new RestHandlerException(403, "Incoming JSON has no validation code");
-
-                    requireNonNull(content.getAsJsonObject().get("entry"), "Missing entry.")
+                    requireNonNull(content.getJsonElement().getAsJsonObject().get("entry"), "Missing entry.")
                             .getAsJsonArray()
                             .forEach(entry -> handleEntry(entry));
-
 
                     return new StringEntity("RECEIVED", StandardCharsets.UTF_8);
                 } catch (NullPointerException | IllegalStateException | IllegalArgumentException | XatkitException | InvalidKeyException | NoSuchAlgorithmException e) {
@@ -86,20 +81,19 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         };
     }
 
-
-    private boolean verifyValidation(final List<Header> headers, JsonElement content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
-        for (Header h : headers) {
-            if (h.getElements()[0].getName().equals("sha1")) {
-                if (!calculateRFC2104HMAC(content.toString(), runtimePlatform.getAppSecret()).equals(h.getElements()[0].getValue())) {
-                    throw new RestHandlerException(403, "Incoming JSON has incorrect validation code");
+    private void verifyValidation(final List<Header> headers, final String content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
+        for (Header header : headers) {
+            if (header.getName().equals("X-Hub-Signature") && header.getElements()[0].getName().equals("sha1")) {
+                if (calculateRFC2104HMAC(content, runtimePlatform.getAppSecret()).equals(header.getElements()[0].getValue())) {
+                    return;
                 }
-                return true;
+                throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Incoming JSON has incorrect validation code");
             }
         }
-        return false;
+        throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Incoming JSON has no validation code");
     }
 
-    private void handleEntry(final JsonElement jsonElement){
+    private void handleEntry(final JsonElement jsonElement) {
         if (!jsonElement.isJsonObject()) {
             return;
         }
