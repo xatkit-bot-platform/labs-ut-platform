@@ -19,9 +19,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import static com.xatkit.plugins.messenger.platform.io.MessengerIntentProviderTestUtils.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import static java.util.Objects.nonNull;
@@ -38,6 +41,8 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     private ExecutionService mockedExecutionService;
 
     private XatkitServer mockedXatkitServer;
+
+    private Configuration configuration;
 
     @BeforeClass
     public static void setUpBeforeClass() {
@@ -72,9 +77,10 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         mockedXatkitServer = mock(XatkitServer.class);
         when(mockedXatkitBot.getXatkitServer()).thenReturn(mockedXatkitServer);
         when(mockedIntentRecognitionProvider.getIntent(any(String.class), any(StateContext.class))).thenReturn(VALID_RECOGNIZED_INTENT);
-        Configuration configuration = new BaseConfiguration();
+        configuration = new BaseConfiguration();
         configuration.addProperty(MessengerUtils.ACCESS_TOKEN_KEY, "TEST_ACCESS");
         configuration.addProperty(MessengerUtils.VERIFY_TOKEN_KEY, "TEST");
+        configuration.addProperty(MessengerUtils.APP_SECRET_KEY, "TEST_SECRET");
         MessengerPlatform messengerPlatform = new MessengerPlatform();
         messengerPlatform.start(mockedXatkitBot, configuration);
         return messengerPlatform;
@@ -94,7 +100,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     @Test
     public void startValidConfiguration() {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
+        provider.start(configuration);
     }
 
     @Test
@@ -106,62 +112,99 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     }
 
     @Test
-    public void handleMessage() throws RestHandlerException {
+    public void handleMessage() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
-        provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), MessengerIntentProviderTestUtils.Requests.CORRECT_CONTENT.getJsonElement());
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(CORRECT_CONTENT, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT);
         ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
-        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(MessengerIntentProviderTestUtils.senderId));
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
     @Test
-    public void handleMultipleMessages() throws RestHandlerException {
+    public void handleMultipleMessages() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
-        provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), MessengerIntentProviderTestUtils.Requests.CORRECT_CONTENT_MULTIPLE_MESSAGES.getJsonElement());
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(CORRECT_CONTENT_MULTIPLE_MESSAGES, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT_MULTIPLE_MESSAGES);
         ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
         verify(mockedExecutionService, times(2)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
-        verify(mockedXatkitBot, times(2)).getOrCreateContext(eq(MessengerIntentProviderTestUtils.senderId));
+        verify(mockedXatkitBot, times(2)).getOrCreateContext(eq(SENDER_ID));
     }
 
     @Test
-    public void handleMultipleEntriesWithMessages() throws RestHandlerException {
+    public void handleMultipleEntriesWithMessages() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
-        provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), MessengerIntentProviderTestUtils.Requests.CORRECT_CONTENT_MULTIPLE_ENTRIES.getJsonElement());
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(CORRECT_CONTENT_MULTIPLE_ENTRIES, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT_MULTIPLE_ENTRIES);
         ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
         verify(mockedExecutionService, times(2)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
-        verify(mockedXatkitBot, times(2)).getOrCreateContext(eq(MessengerIntentProviderTestUtils.senderId));
+        verify(mockedXatkitBot, times(2)).getOrCreateContext(eq(SENDER_ID));
     }
 
     @Test(expected = RestHandlerException.class)
-    public void handleIncorrectRequest() throws RestHandlerException {
+    public void handleIncorrectRequest() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
-        provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), MessengerIntentProviderTestUtils.Requests.INCORRECT_CONTENT.getJsonElement());
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(INCORRECT_CONTENT, platform.getAppSecret()),
+                new ArrayList<>(),
+                INCORRECT_CONTENT);
         verify(mockedExecutionService, never()).handleEventInstance(any(EventInstance.class), any(StateContext.class));
     }
 
     @Test(expected = RestHandlerException.class)
     public void handleNullContentRequest() throws RestHandlerException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
+        provider.start(configuration);
         provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), null);
     }
 
     @Test(expected = RestHandlerException.class)
-    public void handleIntentRecognitionProviderException() throws RestHandlerException, IntentRecognitionProviderException {
+    public void handleIntentRecognitionProviderException() throws RestHandlerException, IntentRecognitionProviderException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
-        provider.start(platform.getConfiguration());
+        provider.start(configuration);
         when(mockedIntentRecognitionProvider.getIntent(any(String.class), any(StateContext.class))).thenThrow(IntentRecognitionProviderException.class);
-        provider.createRestHandler().handleParsedContent(new ArrayList<>(), new ArrayList<>(), MessengerIntentProviderTestUtils.Requests.CORRECT_CONTENT.getJsonElement());
+        provider.createRestHandler().handleContent(
+                generateHeaders(CORRECT_CONTENT, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT);
+    }
+
+    @Test(expected = RestHandlerException.class)
+    public void handleNoXHubSignature() throws RestHandlerException, IntentRecognitionProviderException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        when(mockedIntentRecognitionProvider.getIntent(any(String.class), any(StateContext.class))).thenThrow(IntentRecognitionProviderException.class);
+        provider.createRestHandler().handleContent(
+                new ArrayList<>(),
+                new ArrayList<>(),
+                CORRECT_CONTENT);
+    }
+
+    @Test(expected = RestHandlerException.class)
+    public void handleIncorrectXHubSignature() throws RestHandlerException, IntentRecognitionProviderException, NoSuchAlgorithmException, InvalidKeyException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        when(mockedIntentRecognitionProvider.getIntent(any(String.class), any(StateContext.class))).thenThrow(IntentRecognitionProviderException.class);
+        provider.createRestHandler().handleContent(
+                generateHeaders(INCORRECT_CONTENT, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT);
     }
 
 
