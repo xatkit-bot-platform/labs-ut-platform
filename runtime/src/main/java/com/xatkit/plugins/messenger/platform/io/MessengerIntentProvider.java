@@ -6,9 +6,9 @@ import com.xatkit.core.platform.io.IntentRecognitionHelper;
 import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
-import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerRestHandler;
+import com.xatkit.plugins.messenger.platform.MessengerUtils;
 import lombok.NonNull;
 import lombok.val;
 import org.apache.http.Header;
@@ -20,6 +20,8 @@ import org.apache.http.entity.StringEntity;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -50,7 +52,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
      */
     @Override
     public String getEndpointURI() {
-        return "/messenger/webhook";
+        return MessengerUtils.WEBHOOK_URI;
     }
 
     /**
@@ -71,19 +73,19 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                     if (!verifyValidation(headers, content))
                         throw new RestHandlerException(403, "Incoming JSON has no validation code");
 
-
                     requireNonNull(content.getAsJsonObject().get("entry"), "Missing entry.")
                             .getAsJsonArray()
-                            .iterator()
-                            .forEachRemaining(entry -> handleWebhookEntry(entry));
+                            .forEach(entry -> handleEntry(entry));
+
 
                     return new StringEntity("RECEIVED", StandardCharsets.UTF_8);
-                } catch (NullPointerException | IllegalStateException | IllegalArgumentException | InvalidKeyException | NoSuchAlgorithmException e) {
-                    throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, e.getMessage());
+                } catch (NullPointerException | IllegalStateException | IllegalArgumentException | XatkitException | InvalidKeyException | NoSuchAlgorithmException e) {
+                    throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, e.getMessage(), e);
                 }
             }
         };
     }
+
 
     private boolean verifyValidation(final List<Header> headers, JsonElement content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
         for (Header h : headers) {
@@ -97,7 +99,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         return false;
     }
 
-    private void handleWebhookEntry(final JsonElement jsonElement) {
+    private void handleEntry(final JsonElement jsonElement){
         if (!jsonElement.isJsonObject()) {
             return;
         }
@@ -105,24 +107,27 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         if (!jsonObject.has("messaging")) {
             return;
         }
-        val messaging = jsonObject.get("messaging").getAsJsonArray();
-        messaging.iterator().forEachRemaining(messagingEntity -> {
-            val messageJsonObject = messagingEntity.getAsJsonObject();
-            val sender = requireNonNull(messageJsonObject.get("sender"), "Message has no sender");
-            val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
+        jsonObject.get("messaging")
+                .getAsJsonArray()
+                .forEach(this::handleMessaging);
+    }
 
-            val message = requireNonNull(messageJsonObject.get("message"), "Message has no content");
-            val text = requireNonNull(message.getAsJsonObject().get("text"), "Message has no text").getAsString();
+    private void handleMessaging(JsonElement messaging) {
+        val messageJsonObject = messaging.getAsJsonObject();
+        val sender = requireNonNull(messageJsonObject.get("sender"), "Message has no sender");
+        val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
 
-            try {
-                StateContext context = this.xatkitBot.getOrCreateContext(id);
-                val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
-                        context, this.getRuntimePlatform().getXatkitBot());
-                recognizedIntent.getPlatformData().put("rawMessage", text);
-                this.sendEventInstance(recognizedIntent, context);
-            } catch (IntentRecognitionProviderException e) {
-                throw new XatkitException("An internal error occurred when computing the intent, see attached exception", e);
-            }
-        });
+        val message = requireNonNull(messageJsonObject.get("message"), "Message has no content");
+        val text = requireNonNull(message.getAsJsonObject().get("text"), "Message has no text").getAsString();
+
+        val context = this.xatkitBot.getOrCreateContext(id);
+        try {
+            val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
+                    context, this.getRuntimePlatform().getXatkitBot());
+            recognizedIntent.getPlatformData().put("rawMessage", text);
+            this.sendEventInstance(recognizedIntent, context);
+        } catch (IntentRecognitionProviderException e) {
+            throw new XatkitException("An internal error occurred when computing the intent.", e);
+        }
     }
 }

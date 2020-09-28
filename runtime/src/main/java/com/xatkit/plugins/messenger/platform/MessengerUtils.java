@@ -13,7 +13,7 @@ public class MessengerUtils {
     public static final String VERIFY_TOKEN_KEY = "xatkit.messenger.verify_token";
     public static final String ACCESS_TOKEN_KEY = "xatkit.messenger.access_token";
     public static final String APP_SECRET_KEY = "xatkit.messenger.app_secret";
-
+    public static final String WEBHOOK_URI = "/messenger/webhook";
 
     /**
      * Methods to help validate the webhook events, which use encodings HmacSHA1 encodings for identification
