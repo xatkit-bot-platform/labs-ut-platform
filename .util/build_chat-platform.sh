@@ -8,12 +8,21 @@ e() {
 main() {
 
 	# Do not print the build log, it is already available in the Xatkit build
-    e "Building Chat Platform"
+    e "Building Messenger Platform"
     cd /tmp
-    git clone https://github.com/xatkit-bot-platform/xatkit-chat-platform.git > /dev/null
-    cd xatkit-chat-platform
+    git clone https://github.com/xatkit-bot-platform/labs-ut-platform.git > /dev/null
+    cd labs-ut-platform
     mvn install -DskipTests > /dev/null
     e "Done"
+
+
+    e "Building Rest Platform"
+    cd /tmp
+    git clone https://github.com/xatkit-bot-platform/xatkit-rest-platform > /dev/null
+    cd labs-ut-platform
+    mvn install -DskipTests > /dev/null
+    e "Done"
+
 }
 
 main
