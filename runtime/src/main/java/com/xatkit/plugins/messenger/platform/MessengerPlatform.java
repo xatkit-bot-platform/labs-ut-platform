@@ -6,6 +6,7 @@ import com.xatkit.core.XatkitBot;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
+import com.xatkit.plugins.messenger.platform.action.Message;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
@@ -50,7 +51,12 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
-    public void reply(@NonNull StateContext context, @NonNull String message) {
+    public void reply(@NonNull StateContext context, @NonNull String text) {
+        Message message = new Message().text(text);
+        reply(context,message);
+    }
+
+    public void reply(@NonNull StateContext context, @NonNull Message message) {
         val senderId = context.getContextId();
         Log.debug("REPLYING TO: {0}", senderId);
         val body = new JsonObject();
@@ -59,8 +65,7 @@ public class MessengerPlatform extends RestPlatform {
         recipent.add("id", new JsonPrimitive(senderId));
         body.add("recipient", recipent);
 
-        val messageObject = new JsonObject();
-        messageObject.add("text", new JsonPrimitive(message));
+        val messageObject = message.getJson();
         body.add("message", messageObject);
 
         Map<String, String> headers = new HashMap<>();

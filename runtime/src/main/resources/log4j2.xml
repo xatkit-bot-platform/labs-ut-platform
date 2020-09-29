@@ -9,7 +9,10 @@
         <Logger name="org.apache.commons" level="OFF" additivity="false">
             <AppenderRef ref="Console" />
         </Logger>
-        <Root level="INFO">
+        <logger name="org.apache.http.impl.conn.PoolingHttpClientConnectionManager" level="OFF" additivity="false">
+            <AppenderRef ref="Console" />
+        </logger>
+        <Root level="DEBUG">
             <AppenderRef ref="Console"/>
         </Root>
     </Loggers>

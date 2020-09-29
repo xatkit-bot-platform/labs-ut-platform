@@ -45,6 +45,7 @@ public abstract class MessengerRestHandler extends RestHandler<Object> {
             final @Nonnull List<Header> headers,
             final @Nonnull List<NameValuePair> params,
             final @Nullable Object content) throws RestHandlerException {
+
         return handleParsedContent(headers, params, (MessengerContent) content);
     }
 
