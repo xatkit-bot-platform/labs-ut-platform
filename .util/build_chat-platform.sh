@@ -16,13 +16,6 @@ main() {
     e "Done"
 
 
-    e "Building Rest Platform"
-    cd /tmp
-    git clone https://github.com/xatkit-bot-platform/xatkit-rest-platform > /dev/null
-    cd labs-ut-platform
-    mvn install -DskipTests > /dev/null
-    e "Done"
-
 }
 
 main
