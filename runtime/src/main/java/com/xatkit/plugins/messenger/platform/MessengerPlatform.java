@@ -1,5 +1,6 @@
 package com.xatkit.plugins.messenger.platform;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.xatkit.core.XatkitBot;
@@ -28,6 +29,7 @@ public class MessengerPlatform extends RestPlatform {
     private String verifyToken;
     private String accessToken;
     private String appSecret;
+    private static final Gson gson = new Gson();
 
     @Override
     public void start(@NonNull XatkitBot xatkitBot, @NonNull Configuration configuration) {
@@ -52,7 +54,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public void reply(@NonNull StateContext context, @NonNull String text) {
-        Message message = new Message().text(text);
+        Message message = new Message(text);
         reply(context,message);
     }
 
@@ -65,8 +67,7 @@ public class MessengerPlatform extends RestPlatform {
         recipent.add("id", new JsonPrimitive(senderId));
         body.add("recipient", recipent);
 
-        val messageObject = message.getJson();
-        body.add("message", messageObject);
+        body.add("message", gson.toJsonTree(message));
 
         Map<String, String> headers = new HashMap<>();
         headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
