@@ -6,9 +6,11 @@ import com.xatkit.core.platform.io.IntentRecognitionHelper;
 import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
+import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.server.MessengerRestHandler;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
+import fr.inria.atlanmod.commons.log.Log;
 import lombok.NonNull;
 import lombok.val;
 import org.apache.http.Header;
@@ -65,6 +67,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                     final @Nonnull List<NameValuePair> params,
                     final @Nullable MessengerContent content
             ) throws RestHandlerException {
+                Log.debug("Received content.");
                 try {
                     checkArgument(nonNull(content), "Missing content.");
                     verifyValidation(headers, content.getRawContent());
@@ -107,14 +110,56 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
     }
 
     private void handleMessaging(JsonElement messaging) {
-        val messageJsonObject = messaging.getAsJsonObject();
-        val sender = requireNonNull(messageJsonObject.get("sender"), "Message has no sender");
+        val messagingJsonObject = messaging.getAsJsonObject();
+
+        val sender = requireNonNull(messagingJsonObject.get("sender"), "Message has no sender");
         val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
 
-        val message = requireNonNull(messageJsonObject.get("message"), "Message has no content");
-        val text = requireNonNull(message.getAsJsonObject().get("text"), "Message has no text").getAsString();
-
         val context = this.xatkitBot.getOrCreateContext(id);
+        this.getRuntimePlatform().replyWith200(context);
+
+        if (messagingJsonObject.has("message")) {
+            val message = messagingJsonObject.get("message");
+            handleMessage(message,context);
+        }
+
+        if (messagingJsonObject.has("reaction")) {
+            val reaction = messagingJsonObject.get("reaction");
+            handleReaction(reaction,context);
+        }
+    }
+
+    private void handleMessage(JsonElement message, StateContext context) {
+        val messageJsonObject = message.getAsJsonObject();
+
+        if (!messageJsonObject.has("text")) {
+            Log.error("Didn't recognize message because it had no text!");
+            return;
+        }
+
+        val text = messageJsonObject.get("text").getAsString();
+
+        produceIntentFromRawText(text,context);
+    }
+
+    private void handleReaction(JsonElement reactionElement, StateContext context) {
+        val reactionJsonObject = reactionElement.getAsJsonObject();
+
+        //For some bizarre reason, it doesn't actually tell us what reaction was removed, only the message ID of the message it was removed from.
+        val action = requireNonNull(reactionJsonObject.get("action"), "There is no action").toString();
+        String emoji = null;
+        if (reactionJsonObject.has("emoji")) { emoji = reactionJsonObject.get("emoji").toString(); }
+        String reaction = null;
+        if (reactionJsonObject.has("reaction")) { reaction = reactionJsonObject.get("reaction").toString(); }
+
+        String reactionInterpertation = null;
+        if (reaction != null) reactionInterpertation = reaction;
+
+        if (reactionInterpertation != null) produceIntentFromRawText(reactionInterpertation,context);
+    }
+
+    private void produceIntentFromRawText(String text, StateContext context) {
+        Log.debug("Recognizing intention from text \"{0}\"",text);
         try {
             val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
                     context, this.getRuntimePlatform().getXatkitBot());

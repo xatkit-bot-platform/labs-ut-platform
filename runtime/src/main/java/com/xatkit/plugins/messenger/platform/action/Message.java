@@ -9,7 +9,6 @@ public class Message {
     @Getter
     private final Attachment attachment;
 
-
     public Message(final String text) {
         this.text = text;
         this.attachment = null;

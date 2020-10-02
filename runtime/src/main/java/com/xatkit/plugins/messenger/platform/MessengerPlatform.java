@@ -53,6 +53,34 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
+    // TODO: Merge with Reply
+    public void replyWith200(@NonNull StateContext context) {
+        val senderId = context.getContextId();
+        Log.debug("200 OK TO: {0}", senderId);
+        val body = new JsonObject();
+
+        val recipent = new JsonObject();
+        recipent.add("id", new JsonPrimitive(senderId));
+        body.add("recipient", recipent);
+
+        //TODO: Should be more flexible in the future, also configurable
+        body.add("sender_action", new JsonPrimitive("mark_seen"));
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        headers.put(HttpHeaders.CONTENT_TYPE, "application/json");
+
+        val response = postJsonRequestWithBody(
+                context,
+                "https://graph.facebook.com/v8.0/me/messages",
+                new HashMap<>(),
+                new HashMap<>(),
+                body,
+                headers);
+
+        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(),response.getBody().toString());
+    }
+
     public void reply(@NonNull StateContext context, @NonNull String text) {
         Message message = new Message(text);
         reply(context,message);
