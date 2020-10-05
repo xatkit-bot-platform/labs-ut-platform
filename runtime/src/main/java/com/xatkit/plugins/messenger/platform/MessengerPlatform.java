@@ -1,13 +1,14 @@
 package com.xatkit.plugins.messenger.platform;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.xatkit.core.XatkitBot;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.action.Message;
+import com.xatkit.plugins.messenger.platform.action.Messaging;
+import com.xatkit.plugins.messenger.platform.action.Recipient;
+import com.xatkit.plugins.messenger.platform.action.SenderAction;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
@@ -22,6 +23,7 @@ import java.util.Map;
 import static java.util.Objects.requireNonNull;
 
 // TODO: Add javadocs
+
 /**
  * A {@link RuntimePlatform} class that connects and interacts with the Messenger API.
  */
@@ -53,63 +55,43 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
-    // TODO: Merge with Reply
-    public void replyWith200(@NonNull StateContext context) {
+    public void replyWithMarkSeen(@NonNull StateContext context) {
+        replyWithSenderAction(context, SenderAction.markSeen);
+    }
+
+    public void replyWithSenderAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
         val senderId = context.getContextId();
-        Log.debug("200 OK TO: {0}", senderId);
-        val body = new JsonObject();
-
-        val recipent = new JsonObject();
-        recipent.add("id", new JsonPrimitive(senderId));
-        body.add("recipient", recipent);
-
-        //TODO: Should be more flexible in the future, also configurable
-        body.add("sender_action", new JsonPrimitive("mark_seen"));
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-        headers.put(HttpHeaders.CONTENT_TYPE, "application/json");
-
-        val response = postJsonRequestWithBody(
-                context,
-                "https://graph.facebook.com/v8.0/me/messages",
-                new HashMap<>(),
-                new HashMap<>(),
-                body,
-                headers);
-
-        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(),response.getBody().toString());
+        Log.debug("REPLYING TO: {0} with sender_action", senderId);
+        reply(context, new Messaging(new Recipient(senderId), senderAction));
     }
 
     public void reply(@NonNull StateContext context, @NonNull String text) {
-        Message message = new Message(text);
-        reply(context,message);
+        reply(context, new Message(text));
     }
 
     public void reply(@NonNull StateContext context, @NonNull Message message) {
         val senderId = context.getContextId();
         Log.debug("REPLYING TO: {0}", senderId);
-        val body = new JsonObject();
+        reply(context, new Messaging(new Recipient(senderId), message));
+    }
 
-        val recipent = new JsonObject();
-        recipent.add("id", new JsonPrimitive(senderId));
-        body.add("recipient", recipent);
-
-        body.add("message", gson.toJsonTree(message));
-
-        Map<String, String> headers = new HashMap<>();
+    private Map<String, String> generateHeaders() {
+        val headers = new HashMap<String, String>();
         headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
         headers.put(HttpHeaders.CONTENT_TYPE, "application/json");
+        return headers;
+    }
 
+    public void reply(@NonNull StateContext context, @NonNull Messaging messaging) {
         val response = postJsonRequestWithBody(
                 context,
-                "https://graph.facebook.com/v8.0/me/messages",
+                MessengerUtils.SEND_API_URL,
                 new HashMap<>(),
                 new HashMap<>(),
-                body,
-                headers);
+                gson.toJsonTree(messaging),
+                generateHeaders());
 
-        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(),response.getBody().toString());
+        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(), response.getBody().toString());
     }
 
     public String getAppSecret() {

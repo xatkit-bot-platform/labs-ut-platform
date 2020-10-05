@@ -116,16 +116,16 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
 
         val context = this.xatkitBot.getOrCreateContext(id);
-        this.getRuntimePlatform().replyWith200(context);
+        this.getRuntimePlatform().replyWithMarkSeen(context);
 
         if (messagingJsonObject.has("message")) {
             val message = messagingJsonObject.get("message");
-            handleMessage(message,context);
+            handleMessage(message, context);
         }
 
         if (messagingJsonObject.has("reaction")) {
             val reaction = messagingJsonObject.get("reaction");
-            handleReaction(reaction,context);
+            handleReaction(reaction, context);
         }
     }
 
@@ -139,7 +139,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
         val text = messageJsonObject.get("text").getAsString();
 
-        produceIntentFromRawText(text,context);
+        produceIntentFromRawText(text, context);
     }
 
     private void handleReaction(JsonElement reactionElement, StateContext context) {
@@ -148,18 +148,22 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         //For some bizarre reason, it doesn't actually tell us what reaction was removed, only the message ID of the message it was removed from.
         val action = requireNonNull(reactionJsonObject.get("action"), "There is no action").toString();
         String emoji = null;
-        if (reactionJsonObject.has("emoji")) { emoji = reactionJsonObject.get("emoji").toString(); }
+        if (reactionJsonObject.has("emoji")) {
+            emoji = reactionJsonObject.get("emoji").toString();
+        }
         String reaction = null;
-        if (reactionJsonObject.has("reaction")) { reaction = reactionJsonObject.get("reaction").toString(); }
+        if (reactionJsonObject.has("reaction")) {
+            reaction = reactionJsonObject.get("reaction").toString();
+        }
 
         String reactionInterpertation = null;
         if (reaction != null) reactionInterpertation = reaction;
 
-        if (reactionInterpertation != null) produceIntentFromRawText(reactionInterpertation,context);
+        if (reactionInterpertation != null) produceIntentFromRawText(reactionInterpertation, context);
     }
 
     private void produceIntentFromRawText(String text, StateContext context) {
-        Log.debug("Recognizing intention from text \"{0}\"",text);
+        Log.debug("Recognizing intention from text \"{0}\"", text);
         try {
             val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
                     context, this.getRuntimePlatform().getXatkitBot());
