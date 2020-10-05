@@ -12,6 +12,7 @@ import java.util.List;
 public class MessengerIntentProviderTestUtils {
     public static final String SENDER_ID = "TEST78350350";
     public static final String APP_SECRET = "TEST_APP_SECRET";
+    public static final String MESSAGE_TEXT = "hello";
     public static final String CORRECT_CONTENT = "{\n" +
             "  \"object\":\"page\",\n" +
             "  \"entry\":[\n" +
@@ -27,7 +28,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"<PAGE_ID>\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
-            "              \"text\":\"hello\"\n" +
+            "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
             "          }\n" +
             "        }\n" +
             "      ]\n" +
@@ -49,7 +50,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"<PAGE_ID>\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
-            "              \"text\":\"hello\"\n" +
+            "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
             "          }\n" +
             "        },\n" +
             "        {\n" +
@@ -60,7 +61,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"<PAGE_ID>\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
-            "              \"text\":\"hello2\"\n" +
+            "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
             "          }\n" +
             "        }\n" +
             "      ]\n" +
@@ -83,7 +84,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"<PAGE_ID>\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
-            "              \"text\":\"hello\"\n" +
+            "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
             "          }\n" +
             "        }\n" +
             "      ]\n" +
@@ -100,7 +101,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"<PAGE_ID>\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
-            "              \"text\":\"hello2\"\n" +
+            "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
             "          }\n" +
             "        }\n" +
             "      ]\n" +

@@ -127,6 +127,22 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     }
 
     @Test
+    public void verifyMessageHasRawText() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(CORRECT_CONTENT, platform.getAppSecret()),
+                new ArrayList<>(),
+                CORRECT_CONTENT);
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.RAW_TEXT_KEY)).isEqualTo(MESSAGE_TEXT);
+        assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
     public void handleMultipleMessages() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
         provider.start(configuration);

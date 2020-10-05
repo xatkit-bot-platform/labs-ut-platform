@@ -167,7 +167,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         try {
             val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
                     context, this.getRuntimePlatform().getXatkitBot());
-            recognizedIntent.getPlatformData().put("rawMessage", text);
+            recognizedIntent.getPlatformData().put(MessengerUtils.RAW_TEXT_KEY, text);
             this.sendEventInstance(recognizedIntent, context);
         } catch (IntentRecognitionProviderException e) {
             throw new XatkitException("An internal error occurred when computing the intent.", e);
