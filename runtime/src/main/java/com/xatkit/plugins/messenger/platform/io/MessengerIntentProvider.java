@@ -116,7 +116,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
 
         val context = this.xatkitBot.getOrCreateContext(id);
-        this.getRuntimePlatform().replyWithMarkSeen(context);
+        this.getRuntimePlatform().markSeen(context);
 
         if (messagingJsonObject.has("message")) {
             val message = messagingJsonObject.get("message");

@@ -1,24 +1,21 @@
 package com.xatkit.plugins.messenger.platform;
 
-import com.google.gson.Gson;
 import com.xatkit.core.XatkitBot;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
-import com.xatkit.plugins.messenger.platform.action.Message;
-import com.xatkit.plugins.messenger.platform.action.Messaging;
-import com.xatkit.plugins.messenger.platform.action.Recipient;
-import com.xatkit.plugins.messenger.platform.action.SenderAction;
+import com.xatkit.plugins.messenger.platform.action.*;
+import com.xatkit.plugins.messenger.platform.data.Message;
+import com.xatkit.plugins.messenger.platform.data.Messaging;
+import com.xatkit.plugins.messenger.platform.data.Recipient;
+import com.xatkit.plugins.messenger.platform.data.SenderAction;
 import com.xatkit.plugins.rest.platform.RestPlatform;
+import com.xatkit.plugins.rest.platform.utils.ApiResponse;
 import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.http.HttpHeaders;
 import org.apache.http.entity.StringEntity;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.util.Objects.requireNonNull;
 
@@ -31,7 +28,6 @@ public class MessengerPlatform extends RestPlatform {
     private String verifyToken;
     private String accessToken;
     private String appSecret;
-    private static final Gson gson = new Gson();
 
     @Override
     public void start(@NonNull XatkitBot xatkitBot, @NonNull Configuration configuration) {
@@ -55,14 +51,15 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
-    public void replyWithMarkSeen(@NonNull StateContext context) {
-        replyWithSenderAction(context, SenderAction.markSeen);
+    public void markSeen(@NonNull StateContext context) {
+        sendAction(context, SenderAction.markSeen);
     }
 
-    public void replyWithSenderAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
+    public void sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
         val senderId = context.getContextId();
-        Log.debug("REPLYING TO: {0} with sender_action", senderId);
-        reply(context, new Messaging(new Recipient(senderId), senderAction));
+        Log.debug("Replying to {0} with a sender_action {1}", senderId, senderAction.name());
+        val messaging = new Messaging(new Recipient(senderId), senderAction);
+        excecuteReply(new Reply(this, context, messaging));
     }
 
     public void reply(@NonNull StateContext context, @NonNull String text) {
@@ -72,29 +69,29 @@ public class MessengerPlatform extends RestPlatform {
     public void reply(@NonNull StateContext context, @NonNull Message message) {
         val senderId = context.getContextId();
         Log.debug("REPLYING TO: {0}", senderId);
-        reply(context, new Messaging(new Recipient(senderId), message));
-    }
-
-    private Map<String, String> generateHeaders() {
-        val headers = new HashMap<String, String>();
-        headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
-        headers.put(HttpHeaders.CONTENT_TYPE, "application/json");
-        return headers;
-    }
-
-    public void reply(@NonNull StateContext context, @NonNull Messaging messaging) {
-        val response = postJsonRequestWithBody(
+        val messaging = new Messaging(new Recipient(senderId), message);
+        excecuteReply(new MessageReply(
+                this,
                 context,
-                MessengerUtils.SEND_API_URL,
-                new HashMap<>(),
-                new HashMap<>(),
-                gson.toJsonTree(messaging),
-                generateHeaders());
+                messaging));
+    }
 
-        Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", response.getStatus(), response.getStatusText(), response.getBody().toString());
+    private void excecuteReply(Reply reply) {
+        val result = reply.call().getResult();
+
+        if (result instanceof ApiResponse) {
+            val apiResponse = (ApiResponse<?>) result;
+            Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
+        } else {
+            Log.debug("Unexpected reply result: {0}", result);
+        }
     }
 
     public String getAppSecret() {
         return appSecret;
+    }
+
+    public String getAccessToken() {
+        return accessToken;
     }
 }
