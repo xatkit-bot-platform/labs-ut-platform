@@ -3,8 +3,8 @@ package com.xatkit.plugins.messenger.platform.action;
 import com.xatkit.core.platform.action.RuntimeActionResult;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
-import com.xatkit.plugins.messenger.platform.data.Messaging;
-import com.xatkit.plugins.messenger.platform.data.SenderAction;
+import com.xatkit.plugins.messenger.platform.entity.Messaging;
+import com.xatkit.plugins.messenger.platform.entity.SenderAction;
 import fr.inria.atlanmod.commons.log.Log;
 
 import static com.xatkit.core.platform.action.RuntimeArtifactAction.DEFAULT_MESSAGE_DELAY;

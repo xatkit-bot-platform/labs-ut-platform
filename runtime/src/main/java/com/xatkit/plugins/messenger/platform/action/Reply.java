@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
-import com.xatkit.plugins.messenger.platform.data.Messaging;
+import com.xatkit.plugins.messenger.platform.entity.Messaging;
 import com.xatkit.plugins.rest.platform.action.PostJsonRequestWithBody;
 import lombok.val;
 import org.apache.http.HttpHeaders;
