@@ -10,6 +10,7 @@ import com.xatkit.execution.StateContext;
 import com.xatkit.intent.*;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
+import com.xatkit.plugins.messenger.platform.entity.SenderAction;
 import lombok.SneakyThrows;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -28,7 +29,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import static java.util.Objects.nonNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class MessengerIntentProviderTest extends AbstractEventProviderTest<MessengerIntentProvider, MessengerPlatform> {
@@ -143,6 +143,18 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     }
 
     @Test
+    public void verify200ResponseForTextlessMessage() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        int expectedCount = platform.getMessagesSent() + 1;
+        provider.createRestHandler().handleContent(
+                generateHeaders(TEXTLESS_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                TEXTLESS_MESSAGE);
+        assertThat(platform.getMessagesSent()).isEqualTo(expectedCount);
+    }
+
+    @Test
     public void handleMultipleMessages() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
         provider.start(configuration);
@@ -170,6 +182,36 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
         verify(mockedXatkitBot, times(2)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
+    public void handleReaction() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(REACTION_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                REACTION_MESSAGE);
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+        assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
+    public void handleUnreaction() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(UNREACTION_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                UNREACTION_MESSAGE);
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+        assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
     @Test(expected = RestHandlerException.class)

@@ -11,9 +11,12 @@ import java.util.List;
 
 public class MessengerIntentProviderTestUtils {
     public static final String SENDER_ID = "TEST78350350";
+    public static final String RECIPIENT_PSID = "1254477777772919";
+    public static final String MESSAGE_ID = "AG5Hz2Uq7tuwNEhXfYYKj8mJEM_QPpz5jdCK48PnKAjSdjfipqxqMvK8ma6AC8fplwlqLP_5cgXIbu7I3rBN0P";
     public static final String APP_SECRET = "TEST_APP_SECRET";
     public static final String MESSAGE_TEXT = "hello";
-    public static final String CORRECT_CONTENT = "{\n" +
+    public static final String CORRECT_CONTENT =
+            "{\n" +
             "  \"object\":\"page\",\n" +
             "  \"entry\":[\n" +
             "    {\n" +
@@ -25,7 +28,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + SENDER_ID + "\"\n" +
             "          },\n" +
             "          \"recipient\":{\n" +
-            "            \"id\":\"<PAGE_ID>\"\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
             "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
@@ -35,7 +38,30 @@ public class MessengerIntentProviderTestUtils {
             "    }\n" +
             "  ]\n" +
             "}";
-    public static final String CORRECT_CONTENT_MULTIPLE_MESSAGES = "{\n" +
+    public static final String TEXTLESS_MESSAGE =
+            "{\n" +
+                    "  \"object\":\"page\",\n" +
+                    "  \"entry\":[\n" +
+                    "    {\n" +
+                    "      \"id\":\"<PAGE_ID>\",\n" +
+                    "      \"time\":1458692752478,\n" +
+                    "      \"messaging\":[\n" +
+                    "        {\n" +
+                    "          \"sender\":{\n" +
+                    "            \"id\":\"" + SENDER_ID + "\"\n" +
+                    "          },\n" +
+                    "          \"recipient\":{\n" +
+                    "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+                    "          },\n" +
+                    "          \"message\":{\n" +
+                    "          }\n" +
+                    "        }\n" +
+                    "      ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+    public static final String CORRECT_CONTENT_MULTIPLE_MESSAGES =
+            "{\n" +
             "  \"object\":\"page\",\n" +
             "  \"entry\":[\n" +
             "    {\n" +
@@ -47,7 +73,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + SENDER_ID + "\"\n" +
             "          },\n" +
             "          \"recipient\":{\n" +
-            "            \"id\":\"<PAGE_ID>\"\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
             "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
@@ -69,7 +95,8 @@ public class MessengerIntentProviderTestUtils {
             "  ]\n" +
             "}";
 
-    public static final String CORRECT_CONTENT_MULTIPLE_ENTRIES = "{\n" +
+    public static final String CORRECT_CONTENT_MULTIPLE_ENTRIES =
+            "{\n" +
             "  \"object\":\"page\",\n" +
             "  \"entry\":[\n" +
             "    {\n" +
@@ -81,7 +108,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + SENDER_ID + "\"\n" +
             "          },\n" +
             "          \"recipient\":{\n" +
-            "            \"id\":\"<PAGE_ID>\"\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
             "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
@@ -98,7 +125,7 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + SENDER_ID + "\"\n" +
             "          },\n" +
             "          \"recipient\":{\n" +
-            "            \"id\":\"<PAGE_ID>\"\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"message\":{\n" +
             "              \"text\":\"" + MESSAGE_TEXT + "\"\n" +
@@ -108,9 +135,59 @@ public class MessengerIntentProviderTestUtils {
             "    }\n" +
             "  ]\n" +
             "}";
-
-    public static final String INCORRECT_CONTENT = "{\n" +
+    public static final String INCORRECT_CONTENT =
+            "{\n" +
             "  \"object\":\"page\"\n" +
+            "}";
+    public static final String REACTION_MESSAGE =
+            "{\n" +
+            "  \"object\":\"page\",\n" +
+            "  \"entry\":[\n" +
+            "    {\n" +
+            "      \"id\":\"<PAGE_ID>\",\n" +
+            "      \"time\":1458692752478,\n" +
+            "      \"messaging\":[\n" +
+            "        {\n" +
+            "          \"sender\":{\n" +
+            "            \"id\":\"" + SENDER_ID + "\"\n" +
+            "          },\n" +
+            "          \"recipient\":{\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+            "          },\n" +
+            "          \"reaction\":{\n" +
+            "            \"reaction\":\"wow\",\n" +
+            "            \"emoji\":\"\uD83D\uDE2F\",\n" +
+            "            \"action\":\"react\",\n" +
+            "            \"mid\":\"" + MESSAGE_ID + "\"\n" +
+            "          }\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+    public static final String UNREACTION_MESSAGE =
+            "{\n" +
+            "  \"object\":\"page\",\n" +
+            "  \"entry\":[\n" +
+            "    {\n" +
+            "      \"id\":\"<PAGE_ID>\",\n" +
+            "      \"time\":1458692752478,\n" +
+            "      \"messaging\":[\n" +
+            "        {\n" +
+            "          \"sender\":{\n" +
+            "            \"id\":\"" + SENDER_ID + "\"\n" +
+            "          },\n" +
+            "          \"recipient\":{\n" +
+            "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+            "          },\n" +
+            "          \"reaction\":{\n" +
+            "            \"action\":\"unreact\",\n" +
+            "            \"mid\":\"" + MESSAGE_ID + "\"\n" +
+            "          }\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]\n" +
             "}";
 
     public static List<Header> generateHeaders(String content, String appSecret) throws InvalidKeyException, NoSuchAlgorithmException {

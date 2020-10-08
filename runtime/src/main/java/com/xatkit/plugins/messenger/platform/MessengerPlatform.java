@@ -28,12 +28,16 @@ public class MessengerPlatform extends RestPlatform {
     private String verifyToken;
     private String accessToken;
     private String appSecret;
+    private int messagesSent;
+    private int messagesSentSuccessfully;
 
     @Override
     public void start(@NonNull XatkitBot xatkitBot, @NonNull Configuration configuration) {
         verifyToken = requireNonNull(configuration.getString(MessengerUtils.VERIFY_TOKEN_KEY));
         accessToken = requireNonNull(configuration.getString(MessengerUtils.ACCESS_TOKEN_KEY));
         appSecret = requireNonNull(configuration.getString(MessengerUtils.APP_SECRET_KEY));
+        messagesSent = 0;
+        messagesSentSuccessfully = 0;
         super.start(xatkitBot, configuration);
 
         xatkitBot.getXatkitServer().registerRestEndpoint(HttpMethod.GET, "/messenger/webhook",
@@ -77,11 +81,13 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     private void excecuteReply(Reply reply) {
+        messagesSent++;
         val result = reply.call().getResult();
 
         if (result instanceof ApiResponse) {
             val apiResponse = (ApiResponse<?>) result;
             Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
+            if (apiResponse.getStatus() == 200) messagesSentSuccessfully++;
         } else {
             Log.debug("Unexpected reply result: {0}", result);
         }
@@ -94,4 +100,6 @@ public class MessengerPlatform extends RestPlatform {
     public String getAccessToken() {
         return accessToken;
     }
+
+    public int getMessagesSent() { return messagesSent; }
 }

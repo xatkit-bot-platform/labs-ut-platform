@@ -1,6 +1,5 @@
 package com.xatkit.plugins.messenger.platform;
 
-import com.xatkit.core.platform.io.WebhookEventProvider;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Mac;
