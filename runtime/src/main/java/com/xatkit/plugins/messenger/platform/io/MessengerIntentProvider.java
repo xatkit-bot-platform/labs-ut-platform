@@ -29,7 +29,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.xatkit.plugins.messenger.platform.MessengerUtils.calculateRFC2104HMAC;
 import static fr.inria.atlanmod.commons.Preconditions.checkArgument;
@@ -127,13 +126,18 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val id = requireNonNull(sender.getAsJsonObject().get("id"), "Sender has no id").getAsString();
 
         val context = this.xatkitBot.getOrCreateContext(id);
-        this.getRuntimePlatform().markSeen(context);
 
-        if (messagingJsonObject.has("delivery")) {
+        val configuration = runtimePlatform.getConfiguration();
+
+        if (configuration.getBoolean(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
+            this.getRuntimePlatform().markSeen(context);
+        }
+
+        if (configuration.getBoolean(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
             handleDelivery(messagingJsonObject.get("delivery"), context);
         }
 
-        if (messagingJsonObject.has("read")) {
+        if (configuration.getBoolean(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
             handleRead(messagingJsonObject.get("read"), context);
         }
 
@@ -141,7 +145,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             handleMessage(messagingJsonObject.get("message"), context);
         }
 
-        if (messagingJsonObject.has("reaction")) {
+        if (configuration.getBoolean(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
             handleReaction(messagingJsonObject.get("reaction"), context);
         }
     }
