@@ -195,7 +195,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
-        assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
+        assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageReact);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -210,7 +210,39 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
-        assertThat(sentEvent.getDefinition().getName()).isEqualTo(VALID_EVENT_DEFINITION.getName());
+        assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageUnreact);
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
+    public void handleRead() throws NoSuchAlgorithmException, InvalidKeyException, RestHandlerException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(READ_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                READ_MESSAGE);
+
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+        assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageRead);
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
+    public void handleDelivered() throws NoSuchAlgorithmException, InvalidKeyException, RestHandlerException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(DELIVERED_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                DELIVERED_MESSAGE);
+
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+        assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageDelivered);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 

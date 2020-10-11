@@ -6,7 +6,10 @@ import com.xatkit.core.platform.io.IntentRecognitionHelper;
 import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
+import com.xatkit.dsl.DSL;
 import com.xatkit.execution.StateContext;
+import com.xatkit.intent.EventDefinition;
+import com.xatkit.intent.IntentFactory;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.server.MessengerRestHandler;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
@@ -24,7 +27,9 @@ import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.xatkit.plugins.messenger.platform.MessengerUtils.calculateRFC2104HMAC;
 import static fr.inria.atlanmod.commons.Preconditions.checkArgument;
@@ -38,6 +43,12 @@ import static java.util.Objects.requireNonNull;
  * @see MessengerRestHandler
  */
 public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatform, MessengerRestHandler> {
+    public static EventDefinition MessageDelivered = DSL.event("Message_Delivered").getEventDefinition();
+    public static EventDefinition MessageRead = DSL.event("Message_Read").getEventDefinition();
+    public static EventDefinition MessageUnreact = DSL.event("Message_Unreact").getEventDefinition();
+    public static EventDefinition MessageReact = DSL.event("Message_React").getEventDefinition();
+
+
     /**
      * Constructs a {@link MessengerIntentProvider} and binds it to the provided {@code platform}.
      *
@@ -118,15 +129,43 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val context = this.xatkitBot.getOrCreateContext(id);
         this.getRuntimePlatform().markSeen(context);
 
+        if (messagingJsonObject.has("delivery")) {
+            handleDelivery(messagingJsonObject.get("delivery"), context);
+        }
+
+        if (messagingJsonObject.has("read")) {
+            handleRead(messagingJsonObject.get("read"), context);
+        }
+
         if (messagingJsonObject.has("message")) {
-            val message = messagingJsonObject.get("message");
-            handleMessage(message, context);
+            handleMessage(messagingJsonObject.get("message"), context);
         }
 
         if (messagingJsonObject.has("reaction")) {
-            val reaction = messagingJsonObject.get("reaction");
-            handleReaction(reaction, context);
+            handleReaction(messagingJsonObject.get("reaction"), context);
         }
+    }
+
+    private void handleDelivery(JsonElement delivery, StateContext context) {
+        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+        eventInstance.setDefinition(MessageDelivered);
+        val deliveryObject = delivery.getAsJsonObject();
+
+        val mids = new ArrayList<String>();
+        deliveryObject.get("mids").getAsJsonArray().forEach(mid -> mids.add(mid.getAsString()));
+        eventInstance.getPlatformData().put(MessengerUtils.MESSAGE_IDS_KEY, mids);
+
+        val watermark = deliveryObject.get("watermark").getAsLong();
+        eventInstance.getPlatformData().put(MessengerUtils.WATERMARK_KEY, watermark);
+        sendEventInstance(eventInstance, context);
+    }
+
+    private void handleRead(JsonElement read, StateContext context) {
+        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+        eventInstance.setDefinition(MessageRead);
+        val watermark = read.getAsJsonObject().get("watermark").getAsLong();
+        eventInstance.getPlatformData().put(MessengerUtils.WATERMARK_KEY, watermark);
+        sendEventInstance(eventInstance, context);
     }
 
     private void handleMessage(JsonElement message, StateContext context) {
@@ -144,22 +183,31 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     private void handleReaction(JsonElement reactionElement, StateContext context) {
         val reactionJsonObject = reactionElement.getAsJsonObject();
+        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
 
-        //For some bizarre reason, it doesn't actually tell us what reaction was removed, only the message ID of the message it was removed from.
-        val action = requireNonNull(reactionJsonObject.get("action"), "There is no action").toString();
-        String emoji = null;
-        if (reactionJsonObject.has("emoji")) {
-            emoji = reactionJsonObject.get("emoji").toString();
+        val action = requireNonNull(reactionJsonObject.get("action"), "There is no action").getAsString();
+        val mid = requireNonNull(reactionJsonObject.get("mid"), "There is no message id").getAsString();
+        eventInstance.getPlatformData().put(MessengerUtils.MESSAGE_ID_KEY, mid);
+        if (action.equals("react")) {
+            eventInstance.setDefinition(MessageReact);
+
+            if (reactionJsonObject.has("emoji")) {
+                val emoji = reactionJsonObject.get("emoji").getAsString();
+                eventInstance.getPlatformData().put(MessengerUtils.EMOJI_KEY, emoji);
+            }
+
+            if (reactionJsonObject.has("reaction")) {
+                val reaction = reactionJsonObject.get("reaction").getAsString();
+                eventInstance.getPlatformData().put(MessengerUtils.REACTION_KEY, reaction);
+            }
+            sendEventInstance(eventInstance, context);
         }
-        String reaction = null;
-        if (reactionJsonObject.has("reaction")) {
-            reaction = reactionJsonObject.get("reaction").toString();
+        else if (action.equals("unreact")) {
+            eventInstance.setDefinition(MessageUnreact);
+            sendEventInstance(eventInstance, context);
+        } else {
+            throw new XatkitException("Unrecognised action");
         }
-
-        String reactionInterpertation = null;
-        if (reaction != null) reactionInterpertation = reaction;
-
-        if (reactionInterpertation != null) produceIntentFromRawText(reactionInterpertation, context);
     }
 
     private void produceIntentFromRawText(String text, StateContext context) {

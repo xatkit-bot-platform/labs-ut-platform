@@ -15,6 +15,7 @@ public class MessengerIntentProviderTestUtils {
     public static final String MESSAGE_ID = "AG5Hz2Uq7tuwNEhXfYYKj8mJEM_QPpz5jdCK48PnKAjSdjfipqxqMvK8ma6AC8fplwlqLP_5cgXIbu7I3rBN0P";
     public static final String APP_SECRET = "TEST_APP_SECRET";
     public static final String MESSAGE_TEXT = "hello";
+    public static final long WATERMARK = 1458668856253L;
     public static final String CORRECT_CONTENT =
             "{\n" +
             "  \"object\":\"page\",\n" +
@@ -189,6 +190,58 @@ public class MessengerIntentProviderTestUtils {
             "    }\n" +
             "  ]\n" +
             "}";
+    public static final String READ_MESSAGE =
+            "{\n" +
+            "  \"object\":\"page\",\n" +
+            "  \"entry\":[\n" +
+            "    {\n" +
+            "      \"id\":\"<PAGE_ID>\",\n" +
+            "      \"time\":1458692752478,\n" +
+            "      \"messaging\":[\n" +
+            "       {\n" +
+            "           \"sender\":{\n" +
+            "                \"id\":\"" + SENDER_ID + "\"\n" +
+            "           },\n" +
+            "           \"recipient\":{\n" +
+            "               \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+            "           },\n" +
+            "           \"timestamp\":1458668856463,\n" +
+            "           \"read\":{\n" +
+            "               \"watermark\":" + WATERMARK + "\n" +
+            "           }\n" +
+            "       }\n" +
+            "     ]\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+
+    public static final String DELIVERED_MESSAGE =
+            "{\n" +
+                    "  \"object\":\"page\",\n" +
+                    "  \"entry\":[\n" +
+                    "    {\n" +
+                    "      \"id\":\"<PAGE_ID>\",\n" +
+                    "      \"time\":1458692752478,\n" +
+                    "      \"messaging\":[\n" +
+                    "       {\n" +
+                    "           \"sender\":{\n" +
+                    "                \"id\":\"" + SENDER_ID + "\"\n" +
+                    "           },\n" +
+                    "           \"recipient\":{\n" +
+                    "               \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+                    "           },\n" +
+                    "           \"timestamp\":1458668856463,\n" +
+                    "           \"delivery\":{\n" +
+                    "               \"mids\":[" +
+                    "                   \"" + MESSAGE_ID + "\"\n" +
+                    "                   ],\n" +
+                    "               \"watermark\":" + WATERMARK + "\n" +
+                    "           }\n" +
+                    "       }\n" +
+                    "     ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
 
     public static List<Header> generateHeaders(String content, String appSecret) throws InvalidKeyException, NoSuchAlgorithmException {
         return new ArrayList<Header>() {{

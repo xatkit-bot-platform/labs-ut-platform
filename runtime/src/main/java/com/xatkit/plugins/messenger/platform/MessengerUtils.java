@@ -14,6 +14,11 @@ public class MessengerUtils {
     public static final String ACCESS_TOKEN_KEY = MESSENGER_CONTEXT + "access_token";
     public static final String APP_SECRET_KEY = MESSENGER_CONTEXT + "app_secret";
     public static final String RAW_TEXT_KEY = "raw_text";
+    public static final String MESSAGE_ID_KEY = "mid";
+    public static final String MESSAGE_IDS_KEY = "mids";
+    public static final String WATERMARK_KEY = "watermark";
+    public static final String EMOJI_KEY = "emoji";
+    public static final String REACTION_KEY = "reaction";
     public static final String WEBHOOK_URI = "/messenger/webhook";
     public static final String SEND_API_URL = "https://graph.facebook.com/v8.0/me/messages";
 
