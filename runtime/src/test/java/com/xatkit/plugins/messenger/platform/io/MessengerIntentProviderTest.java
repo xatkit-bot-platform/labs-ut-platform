@@ -86,8 +86,6 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         configuration.addProperty(MessengerUtils.HANDLE_REACTIONS_KEY, true);
         configuration.addProperty(MessengerUtils.HANDLE_DELIVERIES_KEY, true);
         configuration.addProperty(MessengerUtils.HANDLE_READ_KEY, true);
-        configuration.addProperty(MessengerUtils.AUTO_MARK_SEEN_KEY, true);
-
         MessengerPlatform messengerPlatform = new MessengerPlatform();
         messengerPlatform.start(mockedXatkitBot, configuration);
         return messengerPlatform;
