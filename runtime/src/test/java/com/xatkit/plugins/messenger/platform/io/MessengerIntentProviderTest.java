@@ -10,10 +10,11 @@ import com.xatkit.execution.StateContext;
 import com.xatkit.intent.*;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
-import com.xatkit.plugins.messenger.platform.entity.SenderAction;
 import lombok.SneakyThrows;
+import lombok.val;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.http.HttpEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -151,12 +152,11 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     public void verify200ResponseForTextlessMessage() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
         provider.start(configuration);
-        int expectedCount = platform.getMessagesSent() + 1;
-        provider.createRestHandler().handleContent(
+        val response = provider.createRestHandler().handleContent(
                 generateHeaders(TEXTLESS_MESSAGE, platform.getAppSecret()),
                 new ArrayList<>(),
                 TEXTLESS_MESSAGE);
-        assertThat(platform.getMessagesSent()).isEqualTo(expectedCount);
+        assertThat(response).isInstanceOf(HttpEntity.class);
     }
 
     @Test
