@@ -16,6 +16,8 @@ public class MessengerIntentProviderTestUtils {
     public static final String APP_SECRET = "TEST_APP_SECRET";
     public static final String MESSAGE_TEXT = "hello";
     public static final long WATERMARK = 1458668856253L;
+    public static final String REACTION = "wow";
+    public static final String EMOJI = "\uD83D\uDE2F";
     public static final String CORRECT_CONTENT =
             "{\n" +
             "  \"object\":\"page\",\n" +
@@ -156,8 +158,8 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"reaction\":{\n" +
-            "            \"reaction\":\"wow\",\n" +
-            "            \"emoji\":\"\uD83D\uDE2F\",\n" +
+            "            \"reaction\":\"" + REACTION + "\",\n" +
+            "            \"emoji\":\"" + EMOJI + "\",\n" +
             "            \"action\":\"react\",\n" +
             "            \"mid\":\"" + MESSAGE_ID + "\"\n" +
             "          }\n" +

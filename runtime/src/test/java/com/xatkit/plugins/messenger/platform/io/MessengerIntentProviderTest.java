@@ -28,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 import static org.mockito.Mockito.*;
@@ -201,6 +202,9 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageReact);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_ID_KEY)).isEqualTo(MESSAGE_ID);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.REACTION_KEY)).isEqualTo(REACTION);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.EMOJI_KEY)).isEqualTo(EMOJI);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -216,6 +220,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageUnreact);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_ID_KEY)).isEqualTo(MESSAGE_ID);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -232,6 +237,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageRead);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.WATERMARK_KEY)).isEqualTo(WATERMARK);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -248,6 +254,8 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageDelivered);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.WATERMARK_KEY)).isEqualTo(WATERMARK);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_IDS_KEY)).asList().contains(MESSAGE_ID);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
