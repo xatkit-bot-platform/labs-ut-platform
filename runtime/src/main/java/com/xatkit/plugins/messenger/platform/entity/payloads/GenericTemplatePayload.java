@@ -14,21 +14,21 @@ public class GenericTemplatePayload implements GeneralPayload {
     private final String templateType = "generic";
     @SerializedName(value = "image_aspect_ratio")
     @Getter
-    private final ImageAspectRation imageAspectRatio;
+    private final ImageAspectRatio imageAspectRatio;
     @Getter
     private final List<Element> elements; //Maximum size 10
 
     public GenericTemplatePayload(final List<Element> elements) {
         this.elements = elements;
-        this.imageAspectRatio = ImageAspectRation.horizontal;
+        this.imageAspectRatio = ImageAspectRatio.horizontal;
     }
 
-    public GenericTemplatePayload(final List<Element> elements, ImageAspectRation imageAspectRatio) {
+    public GenericTemplatePayload(final List<Element> elements, ImageAspectRatio imageAspectRatio) {
         this.elements = elements;
         this.imageAspectRatio = imageAspectRatio;
     }
 
-    public enum ImageAspectRation {
+    public enum ImageAspectRatio {
         horizontal,
         square
     }
