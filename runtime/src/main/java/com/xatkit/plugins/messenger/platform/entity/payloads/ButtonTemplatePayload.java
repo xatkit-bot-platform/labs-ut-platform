@@ -15,7 +15,7 @@ public class ButtonTemplatePayload implements GeneralPayload {
     @Getter
     private final List<Button> buttons; //Maximum size 3
 
-    public ButtonTemplatePayload(String text, List<Button> buttons){
+    public ButtonTemplatePayload(String text, List<Button> buttons) {
         this.text = text;
         this.buttons = buttons;
     }

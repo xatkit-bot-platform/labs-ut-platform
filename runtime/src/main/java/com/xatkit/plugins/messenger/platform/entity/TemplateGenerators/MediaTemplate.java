@@ -16,20 +16,21 @@ public class MediaTemplate {
     public MediaTemplate() {
     }
 
-    public void constructElementUsingUrl(MediaElement.MediaType mediaType, String url){
-        if(button == null) mediaElement = new MediaElement(mediaType,url,true);
-        else mediaElement = new MediaElement(mediaType,url,true, Collections.singletonList(button));
+    public void constructElementUsingUrl(MediaElement.MediaType mediaType, String url) {
+        if (button == null) mediaElement = new MediaElement(mediaType, url, true);
+        else mediaElement = new MediaElement(mediaType, url, true, Collections.singletonList(button));
 
     }
-    public void constuctElementUsingAttachmentId(MediaElement.MediaType mediaType, String attachmentId){
-        if(button == null) mediaElement = new MediaElement(mediaType,attachmentId,false);
-        else mediaElement = new MediaElement(mediaType,attachmentId,false, Collections.singletonList(button));
+
+    public void constructElementUsingAttachmentId(MediaElement.MediaType mediaType, String attachmentId) {
+        if (button == null) mediaElement = new MediaElement(mediaType, attachmentId, false);
+        else mediaElement = new MediaElement(mediaType, attachmentId, false, Collections.singletonList(button));
     }
 
     public void constructUrlButton(String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
-        if (webviewHeightRatio == null) button = new URLButton(url,title);
-        else button = new URLButton(url,title,webviewHeightRatio);
+        if (webviewHeightRatio == null) button = new URLButton(url, title);
+        else button = new URLButton(url, title, webviewHeightRatio);
 
         this.button = button;
     }
@@ -37,7 +38,7 @@ public class MediaTemplate {
     public void constructPostbackButton(int elementID, String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
-        else button =  new PostbackButton(title,payload);
+        else button = new PostbackButton(title, payload);
 
         this.button = button;
     }

@@ -33,8 +33,8 @@ public class GenericTemplate {
 
     public void addUrlButtonToElement(int elementID, String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
-        if (webviewHeightRatio == null) button = new URLButton(url,title);
-        else button = new URLButton(url,title,webviewHeightRatio);
+        if (webviewHeightRatio == null) button = new URLButton(url, title);
+        else button = new URLButton(url, title, webviewHeightRatio);
 
         if (!buttons.containsKey(elementID)) buttons.put(elementID, new ArrayList<>());
         buttons.get(elementID).add(button);
@@ -44,7 +44,7 @@ public class GenericTemplate {
     public void addPostbackButtonToElement(int elementID, String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
-        else button =  new PostbackButton(title,payload);
+        else button = new PostbackButton(title, payload);
 
         if (!buttons.containsKey(elementID)) buttons.put(elementID, new ArrayList<>());
         buttons.get(elementID).add(button);

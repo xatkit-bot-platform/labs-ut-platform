@@ -10,12 +10,14 @@ public class MediaElement {
     @SerializedName(value = "media_type")
     @Getter
     private final MediaType mediaType;
+
     public enum MediaType {
         @SerializedName("image")
         image,
         @SerializedName("video")
         video
     }
+
     @SerializedName(value = "attachment_id")
     @Getter
     private final String attachmentId;
@@ -27,23 +29,24 @@ public class MediaElement {
     public MediaElement(MediaType mediaType, String attachmentIdORUrl, boolean isUrl) {
         this.mediaType = mediaType;
         this.buttons = null;
-        if(isUrl){
+        if (isUrl) {
             this.attachmentId = null;
             this.url = attachmentIdORUrl;
-        }else{
-            this.attachmentId= attachmentIdORUrl;
+        } else {
+            this.attachmentId = attachmentIdORUrl;
             this.url = null;
         }
 
     }
+
     public MediaElement(MediaType mediaType, String attachmentIdORUrl, boolean isUrl, List<Button> buttons) {
         this.mediaType = mediaType;
         this.buttons = buttons;
-        if(isUrl){
+        if (isUrl) {
             this.attachmentId = null;
             this.url = attachmentIdORUrl;
-        }else{
-            this.attachmentId= attachmentIdORUrl;
+        } else {
+            this.attachmentId = attachmentIdORUrl;
             this.url = null;
         }
 

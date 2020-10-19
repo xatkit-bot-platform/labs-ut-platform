@@ -16,27 +16,27 @@ public class ButtonTemplate {
     private List<Button> buttons;
     private String text;
 
-    public ButtonTemplate(){
+    public ButtonTemplate() {
         this.buttons = new ArrayList<>();
     }
 
-    public void addUrlButton(String title, String url, WebviewHeightRatio webviewHeightRatio){
+    public void addUrlButton(String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
-        if (webviewHeightRatio == null) button = new URLButton(url,title);
-        else button = new URLButton(url,title,webviewHeightRatio);
+        if (webviewHeightRatio == null) button = new URLButton(url, title);
+        else button = new URLButton(url, title, webviewHeightRatio);
         buttons.add(button);
     }
 
     public void addPostbackButton(String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
-        else button =  new PostbackButton(title,payload);
+        else button = new PostbackButton(title, payload);
         buttons.add(button);
     }
-    public void setText(String text){
+
+    public void setText(String text) {
         this.text = text;
     }
-
 
 
     public ButtonTemplatePayload getPayload() {
