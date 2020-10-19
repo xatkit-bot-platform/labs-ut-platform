@@ -8,7 +8,7 @@ import lombok.Getter;
 import java.util.List;
 
 //TODO Add javadoc once Media templates (which also use Element, but with different fields) are done.
-public class Element {
+public class GenericElement {
     @Getter
     private final String title; //Mandatory along with 1 more field | 80 character limit (the rest will get shortened with ...)
     @Getter
@@ -22,7 +22,7 @@ public class Element {
     @Getter
     private final List<Button> buttons; //Max 3 buttons
 
-    public Element(String title, String subtitle, String imageURL, DefaultActionButton defaultActionButton, List<Button> buttons) {
+    public GenericElement(String title, String subtitle, String imageURL, DefaultActionButton defaultActionButton, List<Button> buttons) {
         this.title = title;
         this.subtitle = subtitle;
         this.imageURL = imageURL;

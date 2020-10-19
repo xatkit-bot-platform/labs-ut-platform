@@ -29,8 +29,8 @@ public class Attachment {
         this.payload = payload;
     }
 
-    public Attachment(final GenericTemplatePayload genericTemplatePayload) {
+    public Attachment(final GeneralPayload generalPayload) {
         this.type = AttachmentType.template;
-        this.payload = genericTemplatePayload;
+        this.payload = generalPayload;
     }
 }

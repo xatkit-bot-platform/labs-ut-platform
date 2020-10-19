@@ -1,9 +1,7 @@
-package com.xatkit.plugins.messenger.platform.entity;
+package com.xatkit.plugins.messenger.platform.entity.TemplateGenerators;
 
-import com.xatkit.plugins.messenger.platform.entity.buttons.Button;
-import com.xatkit.plugins.messenger.platform.entity.buttons.DefaultActionButton;
-import com.xatkit.plugins.messenger.platform.entity.buttons.URLButton;
-import com.xatkit.plugins.messenger.platform.entity.buttons.WebviewHeightRatio;
+import com.xatkit.plugins.messenger.platform.entity.GenericElement;
+import com.xatkit.plugins.messenger.platform.entity.buttons.*;
 import com.xatkit.plugins.messenger.platform.entity.payloads.GenericTemplatePayload;
 
 import java.util.ArrayList;
@@ -13,13 +11,13 @@ import java.util.Map;
 
 public class GenericTemplate {
 
-    private List<Element> elements;
+    private List<GenericElement> genericElements;
     private Map<Integer, DefaultActionButton> elementButtons;
     private Map<Integer, List<Button>> buttons;
     private GenericTemplatePayload.ImageAspectRatio imageAspectRatio;
 
     public GenericTemplate() {
-        this.elements = new ArrayList<>();
+        this.genericElements = new ArrayList<>();
         this.elementButtons = new HashMap<>();
         this.buttons = new HashMap<>();
         this.imageAspectRatio = GenericTemplatePayload.ImageAspectRatio.horizontal;
@@ -42,13 +40,23 @@ public class GenericTemplate {
         buttons.get(elementID).add(button);
     }
 
+    //Needs testing as it was added before Postback receiving was implemented
+    public void addPostbackButtonToElement(int elementID, String title, String payload) {
+        Button button;
+        if (payload == null) button = new PostbackButton(title);
+        else button =  new PostbackButton(title,payload);
+
+        if (!buttons.containsKey(elementID)) buttons.put(elementID, new ArrayList<>());
+        buttons.get(elementID).add(button);
+    }
+
     public void constructElement(int elementID, String title, String subtitle, String imageURL) {
         DefaultActionButton elementButton = null;
         if (this.elementButtons.containsKey(elementID)) elementButton = this.elementButtons.get(elementID);
         List<Button> buttons = null;
         if (this.buttons.containsKey(elementID)) buttons = this.buttons.get(elementID);
 
-        elements.add(new Element(title, subtitle, imageURL, elementButton, buttons));
+        genericElements.add(new GenericElement(title, subtitle, imageURL, elementButton, buttons));
     }
 
     public void setImageAspectRatio(GenericTemplatePayload.ImageAspectRatio imageAspectRatio) {
@@ -56,6 +64,6 @@ public class GenericTemplate {
     }
 
     public GenericTemplatePayload getPayload() {
-        return new GenericTemplatePayload(elements, GenericTemplatePayload.ImageAspectRatio.horizontal);
+        return new GenericTemplatePayload(genericElements, GenericTemplatePayload.ImageAspectRatio.horizontal);
     }
 }

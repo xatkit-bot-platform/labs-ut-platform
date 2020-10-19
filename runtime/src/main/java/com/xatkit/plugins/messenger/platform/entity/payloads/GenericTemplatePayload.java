@@ -1,7 +1,7 @@
 package com.xatkit.plugins.messenger.platform.entity.payloads;
 
 import com.google.gson.annotations.SerializedName;
-import com.xatkit.plugins.messenger.platform.entity.Element;
+import com.xatkit.plugins.messenger.platform.entity.GenericElement;
 
 import lombok.Getter;
 
@@ -15,16 +15,17 @@ public class GenericTemplatePayload implements GeneralPayload {
     @SerializedName(value = "image_aspect_ratio")
     @Getter
     private final ImageAspectRatio imageAspectRatio;
+    @SerializedName(value = "elements")
     @Getter
-    private final List<Element> elements; //Maximum size 10
+    private final List<GenericElement> genericElements; //Maximum size 10
 
-    public GenericTemplatePayload(final List<Element> elements) {
-        this.elements = elements;
+    public GenericTemplatePayload(final List<GenericElement> genericElements) {
+        this.genericElements = genericElements;
         this.imageAspectRatio = ImageAspectRatio.horizontal;
     }
 
-    public GenericTemplatePayload(final List<Element> elements, ImageAspectRatio imageAspectRatio) {
-        this.elements = elements;
+    public GenericTemplatePayload(final List<GenericElement> genericElements, ImageAspectRatio imageAspectRatio) {
+        this.genericElements = genericElements;
         this.imageAspectRatio = imageAspectRatio;
     }
 
