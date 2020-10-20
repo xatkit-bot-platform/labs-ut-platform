@@ -15,7 +15,10 @@ import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.http.HttpStatus;
 import org.apache.http.entity.StringEntity;
+
+import java.nio.charset.StandardCharsets;
 
 import static java.util.Objects.requireNonNull;
 
@@ -36,18 +39,18 @@ public class MessengerPlatform extends RestPlatform {
         appSecret = requireNonNull(configuration.getString(MessengerUtils.APP_SECRET_KEY));
         super.start(xatkitBot, configuration);
 
-        xatkitBot.getXatkitServer().registerRestEndpoint(HttpMethod.GET, "/messenger/webhook",
+        xatkitBot.getXatkitServer().registerRestEndpoint(HttpMethod.GET, MessengerUtils.WEBHOOK_URI,
                 RestHandlerFactory.createEmptyContentRestHandler((headers, params, content) -> {
                     val mode = requireNonNull(HttpUtils.getParameterValue("hub.mode", params), "Missing mode");
                     val token = requireNonNull(HttpUtils.getParameterValue("hub.verify_token", params), "Missing token");
                     val challenge = requireNonNull(HttpUtils.getParameterValue("hub.challenge", params), "Missing challenge");
                     if (!mode.equals("subscribe")) {
-                        throw new RestHandlerException(403, "Mode is not 'subscribe'");
+                        throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Mode is not 'subscribe'");
                     }
                     if (!token.equals(verifyToken)) {
-                        throw new RestHandlerException(403, "Token does not match verify token.");
+                        throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Token does not match verify token.");
                     }
-                    return new StringEntity(challenge, "UTF-8");
+                    return new StringEntity(challenge, StandardCharsets.UTF_8);
                 }));
     }
 
