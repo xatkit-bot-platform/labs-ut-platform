@@ -7,6 +7,7 @@ import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
 import com.xatkit.dsl.DSL;
+import com.xatkit.execution.State;
 import com.xatkit.execution.StateContext;
 import com.xatkit.intent.EventDefinition;
 import com.xatkit.intent.IntentFactory;
@@ -46,6 +47,8 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
     public static EventDefinition MessageRead = DSL.event("Message_Read").getEventDefinition();
     public static EventDefinition MessageUnreact = DSL.event("Message_Unreact").getEventDefinition();
     public static EventDefinition MessageReact = DSL.event("Message_React").getEventDefinition();
+    public static EventDefinition MessagePostback = DSL.event("Message_Postback").getEventDefinition();
+
 
 
     /**
@@ -145,9 +148,38 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             handleMessage(messagingJsonObject.get("message"), context);
         }
 
+        if (messagingJsonObject.has("postback")) {
+            handlePostback(messagingJsonObject.get("postback"), context);
+        }
+
         if (configuration.getBoolean(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
             handleReaction(messagingJsonObject.get("reaction"), context);
         }
+    }
+
+    private void handlePostback(JsonElement postback, StateContext context) {
+        val postbackObject = postback.getAsJsonObject();
+        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+        eventInstance.setDefinition(MessagePostback);
+        val title = postbackObject.get("title").getAsString();
+        eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_TITLE_KEY, title);
+
+        if (postbackObject.has("payload")) {
+            val payload = postbackObject.get("payload").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_PAYLOAD_KEY, payload);
+        }
+
+        if (postbackObject.has("refferal")) {
+            val refferal = postbackObject.get("refferal").getAsJsonObject();
+            val ref = refferal.get("ref").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_REF_KEY, ref);
+            val source = refferal.get("source").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_SOURCE_KEY, source);
+            val type = refferal.get("type").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY, type);
+        }
+
+        sendEventInstance(eventInstance, context);
     }
 
     private void handleDelivery(JsonElement delivery, StateContext context) {
