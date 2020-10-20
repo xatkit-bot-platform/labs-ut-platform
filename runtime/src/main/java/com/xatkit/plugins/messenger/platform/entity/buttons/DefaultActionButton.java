@@ -7,10 +7,7 @@ import lombok.Getter;
 /**
  * A special type of button for general templates. Redirects the user to given URL.
  */
-public class DefaultActionButton implements Button {
-
-    @Getter
-    private final String type = "web_url";
+public class DefaultActionButton extends Button {
     @Getter
     private final String url;
     /**
@@ -22,11 +19,11 @@ public class DefaultActionButton implements Button {
 
 
     public DefaultActionButton(String url) {
-        this.url = url;
-        this.webviewHeightRatio = WebviewHeightRatio.full;
+        this(url, WebviewHeightRatio.full);
     }
 
     public DefaultActionButton(String url, WebviewHeightRatio webviewHeightRatio) {
+        super("web_url");
         this.url = url;
         this.webviewHeightRatio = webviewHeightRatio;
     }

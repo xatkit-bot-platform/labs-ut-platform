@@ -8,10 +8,7 @@ import lombok.Getter;
 import java.util.List;
 
 
-public class GenericTemplatePayload implements GeneralPayload {
-    @SerializedName(value = "template_type")
-    @Getter
-    private final String templateType = "generic";
+public class GenericTemplatePayload extends TemplatePayload {
     @SerializedName(value = "image_aspect_ratio")
     @Getter
     private final ImageAspectRatio imageAspectRatio;
@@ -20,11 +17,11 @@ public class GenericTemplatePayload implements GeneralPayload {
     private final List<GenericElement> genericElements; //Maximum size 10
 
     public GenericTemplatePayload(final List<GenericElement> genericElements) {
-        this.genericElements = genericElements;
-        this.imageAspectRatio = ImageAspectRatio.horizontal;
+        this(genericElements, ImageAspectRatio.horizontal);
     }
 
     public GenericTemplatePayload(final List<GenericElement> genericElements, ImageAspectRatio imageAspectRatio) {
+        super("generic");
         this.genericElements = genericElements;
         this.imageAspectRatio = imageAspectRatio;
     }

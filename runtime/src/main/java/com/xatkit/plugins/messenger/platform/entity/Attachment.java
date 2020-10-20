@@ -1,16 +1,15 @@
 package com.xatkit.plugins.messenger.platform.entity;
 
 import com.google.gson.annotations.SerializedName;
-import com.xatkit.plugins.messenger.platform.entity.payloads.GeneralPayload;
-import com.xatkit.plugins.messenger.platform.entity.payloads.GenericTemplatePayload;
-import com.xatkit.plugins.messenger.platform.entity.payloads.NonTemplatePayload;
+import com.xatkit.plugins.messenger.platform.entity.payloads.Payload;
+import com.xatkit.plugins.messenger.platform.entity.payloads.TemplatePayload;
 import lombok.Getter;
 
 public class Attachment {
     @Getter
     private final AttachmentType type;
     @Getter
-    private final GeneralPayload payload;
+    private final Payload payload;
 
     // TODO: Support files and templates as well
     public enum AttachmentType {
@@ -24,13 +23,12 @@ public class Attachment {
         template
     }
 
-    public Attachment(final AttachmentType type, final NonTemplatePayload payload) {
+    public Attachment(final AttachmentType type, final Payload payload) {
         this.type = type;
         this.payload = payload;
     }
 
-    public Attachment(final GeneralPayload generalPayload) {
-        this.type = AttachmentType.template;
-        this.payload = generalPayload;
+    public Attachment(final TemplatePayload payload) {
+        this(AttachmentType.template, payload);
     }
 }
