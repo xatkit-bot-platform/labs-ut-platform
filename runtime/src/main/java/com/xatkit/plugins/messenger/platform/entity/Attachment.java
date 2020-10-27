@@ -20,7 +20,9 @@ public class Attachment {
         @SerializedName("image")
         image,
         @SerializedName("template")
-        template
+        template,
+        @SerializedName("file")
+        file
     }
 
     public Attachment(final AttachmentType type, final Payload payload) {

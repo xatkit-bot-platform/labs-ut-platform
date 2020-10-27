@@ -5,10 +5,7 @@ import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.action.*;
-import com.xatkit.plugins.messenger.platform.entity.Message;
-import com.xatkit.plugins.messenger.platform.entity.Messaging;
-import com.xatkit.plugins.messenger.platform.entity.Recipient;
-import com.xatkit.plugins.messenger.platform.entity.SenderAction;
+import com.xatkit.plugins.messenger.platform.entity.*;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import com.xatkit.plugins.rest.platform.utils.ApiResponse;
 import lombok.NonNull;
@@ -63,6 +60,23 @@ public class MessengerPlatform extends RestPlatform {
         Log.debug("Replying to {0} with a sender_action {1}", senderId, senderAction.name());
         val messaging = new Messaging(new Recipient(senderId), senderAction);
         excecuteReply(new Reply(this, context, messaging));
+    }
+
+    public void sendFile(@NonNull StateContext context, File file) {
+        val senderId = context.getContextId();
+        Log.debug("SENDING FILE TO: {0}", senderId);
+        executeSendFile(new FilePost(this, context, file));
+    }
+
+    private void executeSendFile(FilePost filePost) {
+        val result = filePost.call().getResult();
+
+        if (result instanceof ApiResponse) {
+            val apiResponse = (ApiResponse<?>) result;
+            Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
+        } else {
+            Log.debug("Unexpected reply result: {0}", result);
+        }
     }
 
     public void reply(@NonNull StateContext context, @NonNull String text) {

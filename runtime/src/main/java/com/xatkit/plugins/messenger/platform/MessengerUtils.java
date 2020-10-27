@@ -30,6 +30,7 @@ public class MessengerUtils {
     public static final String REACTION_KEY = "reaction";
     public static final String WEBHOOK_URI = "/messenger/webhook";
     public static final String SEND_API_URL = "https://graph.facebook.com/v8.0/me/messages";
+    public static final String ATTACHMENT_UPLOAD_API_URL = "https://graph.facebook.com/v8.0/me/message_attachments";
 
 
     public static String calculateRFC2104HMAC(String data, String key) throws NoSuchAlgorithmException, InvalidKeyException {
