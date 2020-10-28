@@ -29,7 +29,6 @@ public class FilePost extends PostJsonRequestWithFormData {
     private static Map<String, String> generateHeaders(MessengerPlatform platform) {
         val headers = new HashMap<String, String>();
         headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + platform.getAccessToken());
-        headers.put(HttpHeaders.CONTENT_TYPE, "multipart/form-data");
         return headers;
     }
 }
