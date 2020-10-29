@@ -1,5 +1,6 @@
 package com.xatkit.plugins.messenger.platform;
 
+import com.google.gson.JsonParser;
 import com.xatkit.core.XatkitBot;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
@@ -62,14 +63,37 @@ public class MessengerPlatform extends RestPlatform {
         excecuteReply(new Reply(this, context, messaging));
     }
 
-    public void sendFile(@NonNull StateContext context, File file) {
-        val senderId = context.getContextId();
-        Log.debug("SENDING FILE TO: {0}", senderId);
-        executeSendFile(new FilePost(this, context, file));
+    public void sendFile(@NonNull StateContext context, ReusableFile file) {
+        executeSendFile(new FilePost(this, context, file.getFile()), file);
     }
 
-    private void executeSendFile(FilePost filePost) {
+    private void executeSendFile(FilePost filePost, ReusableFile file) {
         val result = filePost.call().getResult();
+
+        if (result instanceof ApiResponse) {
+            val apiResponse = (ApiResponse<?>) result;
+            Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
+
+            JsonParser jsonParser = new JsonParser();
+            String attachment_id = jsonParser.parse(apiResponse.getBody().toString()).getAsJsonObject().get("attachment_id").getAsString();
+            file.setAttachmentId(attachment_id);
+            Log.debug("Saved attachment ID: {0}", attachment_id);
+        } else {
+            Log.debug("Unexpected reply result: {0}", result);
+        }
+    }
+
+    public void reply(@NonNull StateContext context, File file) {
+        DirectFile directFile = new DirectFile(context.getContextId(), file);
+
+        excecuteReply(new FileReply(
+                this,
+                context,
+                directFile));
+    }
+
+    private void excecuteReply(FileReply reply) {
+        val result = reply.call().getResult();
 
         if (result instanceof ApiResponse) {
             val apiResponse = (ApiResponse<?>) result;

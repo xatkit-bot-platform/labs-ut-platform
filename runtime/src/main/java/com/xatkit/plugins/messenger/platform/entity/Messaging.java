@@ -31,4 +31,10 @@ public class Messaging {
     public Messaging(String recipent, Message message) {
         this(new Recipient(recipent), message);
     }
+
+    public Messaging(Recipient recipient) {
+        this.recipient = recipient;
+        this.senderAction = null;
+        this.message = null;
+    }
 }
