@@ -6,6 +6,7 @@ import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
 import com.xatkit.plugins.messenger.platform.entity.Messaging;
 import com.xatkit.plugins.rest.platform.action.PostJsonRequestWithBody;
+import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import org.apache.http.HttpHeaders;
 
@@ -24,6 +25,7 @@ public class Reply extends PostJsonRequestWithBody {
      */
     public Reply(MessengerPlatform platform, StateContext context, Messaging messaging) {
         super(platform, context, MessengerUtils.SEND_API_URL, null, null, gson.toJsonTree(messaging), generateHeaders(platform));
+        Log.info("Sent {0}", gson.toJsonTree(messaging).toString());
     }
 
     private static Map<String, String> generateHeaders(MessengerPlatform platform) {

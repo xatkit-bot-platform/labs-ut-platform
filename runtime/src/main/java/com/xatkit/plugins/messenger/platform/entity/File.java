@@ -1,34 +1,31 @@
 package com.xatkit.plugins.messenger.platform.entity;
-import com.google.gson.Gson;
-import com.xatkit.plugins.messenger.platform.entity.payloads.FilePayload;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.xatkit.plugins.messenger.platform.entity.payloads.FilePayload;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class File {
-    private static final Gson gson = new Gson();
+    @Getter
+    private final Attachment attachment;
+    @Getter
+    private final java.io.File file;
+    @Getter
+    private final String mimeType;
+    @Getter
+    @Setter
+    private String attachmentId;
 
-    private Attachment attachment;
-    private java.io.File file;
-    private String type;
+    public File(@NonNull Attachment.AttachmentType attachmentType, @NonNull java.io.File file) throws IOException {
+        this(attachmentType, file, Files.probeContentType(file.toPath()));
+    }
 
-    public File(Attachment.AttachmentType attachmentType, java.io.File file, String fileExtension) {
-        String type = attachmentType.name();
-        if (fileExtension != null) type += "/" + fileExtension.toLowerCase();
-        this.type = type;
+    public File(@NonNull Attachment.AttachmentType attachmentType, @NonNull java.io.File file, @NonNull String mimeType) {
+        this.mimeType = mimeType;
         this.file = file;
-        this.attachment = new Attachment(attachmentType,new FilePayload(true));
-    }
-
-    public String getContentType() {
-        return type;
-    }
-
-
-    public Map<String, Object> getParams() {
-        Map<String,Object> params = new LinkedHashMap<>();
-        params.put("message",gson.toJsonTree(new FileSending(attachment)));
-        params.put("filedata",file);
-        return params;
+        this.attachment = new Attachment(attachmentType, new FilePayload(true));
     }
 }
