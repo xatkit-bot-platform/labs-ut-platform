@@ -1,32 +1,31 @@
 package com.xatkit.plugins.messenger.platform.entity;
 
-import com.google.gson.Gson;
 import com.xatkit.plugins.messenger.platform.entity.payloads.FilePayload;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
+import lombok.NonNull;
+import lombok.Setter;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.nio.file.Files;
 
 public class File {
-    private static final Gson gson = new Gson();
-
     @Getter
     private final Attachment attachment;
     @Getter
     private final java.io.File file;
     @Getter
-    private final String type;
+    private final String mimeType;
+    @Getter
+    @Setter
+    private String attachmentId;
 
-    public File(Attachment.AttachmentType attachmentType, java.io.File file, String fileExtension) {
-        String type = attachmentType.name();
-        if (!StringUtils.isEmpty(fileExtension)) type += "/" + fileExtension.toLowerCase();
-        this.type = type;
-        this.file = file;
-        this.attachment = new Attachment(attachmentType, new FilePayload(true));
+    public File(@NonNull Attachment.AttachmentType attachmentType, @NonNull java.io.File file) throws IOException {
+        this(attachmentType, file, Files.probeContentType(file.toPath()));
     }
 
-    public String getContentType() {
-        return type;
+    public File(@NonNull Attachment.AttachmentType attachmentType, @NonNull java.io.File file, @NonNull String mimeType) {
+        this.mimeType = mimeType;
+        this.file = file;
+        this.attachment = new Attachment(attachmentType, new FilePayload(true));
     }
 }

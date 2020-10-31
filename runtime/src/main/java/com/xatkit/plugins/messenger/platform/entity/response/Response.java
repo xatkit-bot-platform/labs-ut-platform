@@ -1,4 +1,4 @@
-package com.xatkit.plugins.messenger.platform.entity;
+package com.xatkit.plugins.messenger.platform.entity.response;
 
 import lombok.Getter;
 
