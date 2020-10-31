@@ -1,7 +1,6 @@
 package com.xatkit.plugins.messenger.platform.entity;
 import com.google.gson.Gson;
 import com.xatkit.plugins.messenger.platform.entity.payloads.FilePayload;
-import fr.inria.atlanmod.commons.log.Log;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -17,26 +16,19 @@ public class File {
         String type = attachmentType.name();
         if (fileExtension != null) type += "/" + fileExtension.toLowerCase();
         this.type = type;
-        Log.debug("TYPE: {0}", type);
         this.file = file;
         this.attachment = new Attachment(attachmentType,new FilePayload(true));
     }
 
-    public File(File file) {
-        this.attachment = file.getAttachment();
-        this.file = file.getFile();
-        this.type = file.getType();
+    public String getContentType() {
+        return type;
     }
 
-    public Attachment getAttachment() { return attachment; }
-    public java.io.File getFile() { return file; }
-    public String getType() { return type; }
 
     public Map<String, Object> getParams() {
         Map<String,Object> params = new LinkedHashMap<>();
         params.put("message",gson.toJsonTree(new FileSending(attachment)));
         params.put("filedata",file);
-        params.put("type",type);
         return params;
     }
 }
