@@ -25,7 +25,6 @@ public class Reply extends PostJsonRequestWithBody {
      */
     public Reply(MessengerPlatform platform, StateContext context, Messaging messaging) {
         super(platform, context, MessengerUtils.SEND_API_URL, null, null, gson.toJsonTree(messaging), generateHeaders(platform));
-        Log.info("Sent {0}", gson.toJsonTree(messaging).toString());
     }
 
     private static Map<String, String> generateHeaders(MessengerPlatform platform) {

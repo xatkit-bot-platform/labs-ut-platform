@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class FilePost extends JsonRestRequest<JsonElement> {
+public class FileReply extends JsonRestRequest<JsonElement> {
     private static final Gson gson = new Gson();
     private final File file;
 
@@ -28,7 +28,7 @@ public class FilePost extends JsonRestRequest<JsonElement> {
      * @param context      the {@link StateContext} associated to this action
      * @param file         the information related to the file to be sent;
      */
-    public FilePost(MessengerPlatform platform, StateContext context, File file) {
+    public FileReply(MessengerPlatform platform, StateContext context, File file) {
         super(platform, context, MethodKind.POST, MessengerUtils.ATTACHMENT_UPLOAD_API_URL, null, null, null, generateHeaders(platform), generateParams(file));
         this.file = file;
     }

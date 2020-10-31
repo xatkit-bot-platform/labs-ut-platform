@@ -71,7 +71,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public Response uploadFile(@NonNull StateContext context, File file) {
-        return excecuteRequest(new FilePost(this, context, file));
+        return excecuteRequest(new FileReply(this, context, file));
     }
 
     public Response sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
@@ -117,8 +117,8 @@ public class MessengerPlatform extends RestPlatform {
         val result = request.call().getResult();
 
         if (result instanceof ApiResponse) {
-            val apiResponse = (ApiResponse<JsonElement>) result;
-            val responseBody = apiResponse.getBody().getAsJsonObject();
+            val apiResponse = (ApiResponse<?>) result;
+            val responseBody = ((JsonElement) apiResponse.getBody()).getAsJsonObject();
             val status = apiResponse.getStatus();
             if (status < 200 || status > 299) {
                 Log.error("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
