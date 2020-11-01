@@ -64,7 +64,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public Response sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
-        val recipientId = context.getContextId();
+        val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("Replying to {0} with a sender_action {1}", recipientId, senderAction.name());
         val messaging = new Messaging(new Recipient(recipientId), senderAction);
         return reply(new Reply(this, context, messaging));
@@ -75,7 +75,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public Response sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
-        val recipientId = context.getContextId();
+        val recipientId = MessengerUtils.extractContextId(context.getContextId());
         val messaging = new Messaging(
                 new Recipient(recipientId),
                 new Message(new Attachment(attachmentType, new AttachmentIdPayload(attachmentId))));
@@ -85,7 +85,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public Response sendFile(@NonNull StateContext context, @NonNull File file) {
-        var attachmentId = file.getAttachmentId();
+        var attachmentId = file.getAttachmentId(); //I did not use the custom extractContextId here, so this is a potential error place
         if (StringUtils.isEmpty(attachmentId)) {
             val response = uploadFile(context, file);
             if (!(response instanceof SendResponse)) {
@@ -103,7 +103,7 @@ public class MessengerPlatform extends RestPlatform {
     }
 
     public Response reply(@NonNull StateContext context, @NonNull Message message) {
-        val recipientId = context.getContextId();
+        val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("REPLYING TO: {0}", recipientId);
         val messaging = new Messaging(new Recipient(recipientId), message);
         return reply(new MessageReply(this, context, messaging));

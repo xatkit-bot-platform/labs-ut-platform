@@ -39,4 +39,11 @@ public class MessengerUtils {
         mac.init(signingKey);
         return new String(Hex.encodeHex(mac.doFinal(data.getBytes())));
     }
+
+    //If one adds dialogflow to the bot, dialogflow will add some prefix to the context id
+    public static String extractContextId(String contextIdWithDialogflow) {
+        String[] senderIdSplit = contextIdWithDialogflow.split("/"); //This removes the useless part and leaves only the id
+        return senderIdSplit[senderIdSplit.length - 1]; //A better solution is more than welcome
+
+    }
 }
