@@ -23,44 +23,49 @@ public class GenericTemplate {
         this.imageAspectRatio = GenericTemplatePayload.ImageAspectRatio.horizontal;
     }
 
-    public void setDefaultElementButton(int elementID, String url, WebviewHeightRatio webviewHeightRatio) {
+    public GenericTemplate setDefaultElementButton(int elementID, String url, WebviewHeightRatio webviewHeightRatio) {
         DefaultActionButton elementButton;
         if (webviewHeightRatio == null) elementButton = new DefaultActionButton(url);
         else elementButton = new DefaultActionButton(url, webviewHeightRatio);
 
         elementButtons.put(elementID, elementButton);
+        return this;
     }
 
-    public void addUrlButtonToElement(int elementID, String title, String url, WebviewHeightRatio webviewHeightRatio) {
+    public GenericTemplate addUrlButtonToElement(int elementID, String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
         if (webviewHeightRatio == null) button = new URLButton(url, title);
         else button = new URLButton(url, title, webviewHeightRatio);
 
         if (!buttons.containsKey(elementID)) buttons.put(elementID, new ArrayList<>());
         buttons.get(elementID).add(button);
+        return this;
     }
 
     //Needs testing as it was added before Postback receiving was implemented
-    public void addPostbackButtonToElement(int elementID, String title, String payload) {
+    public GenericTemplate addPostbackButtonToElement(int elementID, String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
         else button = new PostbackButton(title, payload);
 
         if (!buttons.containsKey(elementID)) buttons.put(elementID, new ArrayList<>());
         buttons.get(elementID).add(button);
+        return this;
     }
 
-    public void constructElement(int elementID, String title, String subtitle, String imageURL) {
+    public GenericTemplate constructElement(int elementID, String title, String subtitle, String imageURL) {
         DefaultActionButton elementButton = null;
         if (this.elementButtons.containsKey(elementID)) elementButton = this.elementButtons.get(elementID);
         List<Button> buttons = null;
         if (this.buttons.containsKey(elementID)) buttons = this.buttons.get(elementID);
 
         genericElements.add(new GenericElement(title, subtitle, imageURL, elementButton, buttons));
+        return this;
     }
 
-    public void setImageAspectRatio(GenericTemplatePayload.ImageAspectRatio imageAspectRatio) {
+    public GenericTemplate setImageAspectRatio(GenericTemplatePayload.ImageAspectRatio imageAspectRatio) {
         this.imageAspectRatio = imageAspectRatio;
+        return this;
     }
 
     public GenericTemplatePayload getPayload() {

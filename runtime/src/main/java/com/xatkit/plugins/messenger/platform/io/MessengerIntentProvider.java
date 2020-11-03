@@ -167,6 +167,8 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         if (postbackObject.has("payload")) {
             val payload = postbackObject.get("payload").getAsString();
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_PAYLOAD_KEY, payload);
+            //TODO: Remove this hack. :(
+            produceIntentFromRawText(payload, context);
         }
 
         if (postbackObject.has("refferal")) {
@@ -179,7 +181,8 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY, type);
         }
 
-        sendEventInstance(eventInstance, context);
+        // I'm so sorry.
+        //sendEventInstance(eventInstance, context);
     }
 
     private void handleDelivery(JsonElement delivery, StateContext context) {
@@ -236,23 +239,25 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 val reaction = reactionJsonObject.get("reaction").getAsString();
                 eventInstance.getPlatformData().put(MessengerUtils.REACTION_KEY, reaction);
             }
+            Log.debug("Recognized react event");
             sendEventInstance(eventInstance, context);
         }
         else if (action.equals("unreact")) {
             eventInstance.setDefinition(MessageUnreact);
+            Log.debug("Recognized unreact event");
             sendEventInstance(eventInstance, context);
         } else {
             throw new XatkitException("Unrecognised action");
         }
     }
 
-    private void produceIntentFromRawText(String text, StateContext context) {
+    public void produceIntentFromRawText(String text, StateContext context) {
         Log.debug("Recognizing intention from text \"{0}\"", text);
         try {
             val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
                     context, this.getRuntimePlatform().getXatkitBot());
             recognizedIntent.getPlatformData().put(MessengerUtils.RAW_TEXT_KEY, text);
-            this.sendEventInstance(recognizedIntent, context);
+            sendEventInstance(recognizedIntent, context);
         } catch (IntentRecognitionProviderException e) {
             throw new XatkitException("An internal error occurred when computing the intent.", e);
         }
