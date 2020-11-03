@@ -10,6 +10,7 @@ import com.xatkit.dsl.DSL;
 import com.xatkit.execution.State;
 import com.xatkit.execution.StateContext;
 import com.xatkit.intent.EventDefinition;
+import com.xatkit.intent.EventInstance;
 import com.xatkit.intent.IntentFactory;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.server.MessengerRestHandler;
@@ -130,17 +131,15 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
         val context = this.xatkitBot.getOrCreateContext(id);
 
-        val configuration = runtimePlatform.getConfiguration();
-
-        if (configuration.getBoolean(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
+        if (checkConfig(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
             this.getRuntimePlatform().markSeen(context);
         }
 
-        if (configuration.getBoolean(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
+        if (checkConfig(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
             handleDelivery(messagingJsonObject.get("delivery"), context);
         }
 
-        if (configuration.getBoolean(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
+        if (checkConfig(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
             handleRead(messagingJsonObject.get("read"), context);
         }
 
@@ -152,23 +151,34 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             handlePostback(messagingJsonObject.get("postback"), context);
         }
 
-        if (configuration.getBoolean(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
+        if (checkConfig(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
             handleReaction(messagingJsonObject.get("reaction"), context);
         }
     }
 
     private void handlePostback(JsonElement postback, StateContext context) {
         val postbackObject = postback.getAsJsonObject();
-        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
-        eventInstance.setDefinition(MessagePostback);
+        EventInstance eventInstance = null;
+        if (checkConfig(MessengerUtils.INTENT_FROM_POSTBACK, false)) {
+            String text = null;
+            if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_TITLE_TEXT, false)) {
+                text = postbackObject.get("title").getAsString();
+            } else if (postbackObject.has("emoji")) {
+                text = postbackObject.get("emoji").getAsString();
+            }
+            if (postbackObject.has("payload")) { text = postbackObject.get("payload").getAsString(); }
+            eventInstance = produceIntentFromRawText(text, context);
+        } else {
+            eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+            eventInstance.setDefinition(MessagePostback);
+        }
+
         val title = postbackObject.get("title").getAsString();
         eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_TITLE_KEY, title);
 
         if (postbackObject.has("payload")) {
             val payload = postbackObject.get("payload").getAsString();
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_PAYLOAD_KEY, payload);
-            //TODO: Remove this hack. :(
-            produceIntentFromRawText(payload, context);
         }
 
         if (postbackObject.has("refferal")) {
@@ -181,8 +191,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY, type);
         }
 
-        // I'm so sorry.
-        //sendEventInstance(eventInstance, context);
+        sendEventInstance(eventInstance, context);
     }
 
     private void handleDelivery(JsonElement delivery, StateContext context) {
@@ -217,18 +226,31 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
         val text = messageJsonObject.get("text").getAsString();
 
-        produceIntentFromRawText(text, context);
+        val eventInstance = produceIntentFromRawText(text, context);
+        sendEventInstance(eventInstance, context);
     }
 
     private void handleReaction(JsonElement reactionElement, StateContext context) {
         val reactionJsonObject = reactionElement.getAsJsonObject();
-        val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+        EventInstance eventInstance = null;
+        if (checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) {
+            String text = null;
+            if (reactionJsonObject.has("reaction") && checkConfig(MessengerUtils.USE_REACTION_TEXT, false)) {
+                text = reactionJsonObject.get("reaction").getAsString();
+            } else if (reactionJsonObject.has("emoji")) {
+                text = reactionJsonObject.get("emoji").getAsString();
+            }
+            eventInstance = produceIntentFromRawText(text, context);
+        } else {
+            eventInstance = IntentFactory.eINSTANCE.createEventInstance();
+        }
 
         val action = requireNonNull(reactionJsonObject.get("action"), "There is no action").getAsString();
         val mid = requireNonNull(reactionJsonObject.get("mid"), "There is no message id").getAsString();
         eventInstance.getPlatformData().put(MessengerUtils.MESSAGE_ID_KEY, mid);
+
         if (action.equals("react")) {
-            eventInstance.setDefinition(MessageReact);
+            if (!checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) eventInstance.setDefinition(MessageReact);
 
             if (reactionJsonObject.has("emoji")) {
                 val emoji = reactionJsonObject.get("emoji").getAsString();
@@ -239,27 +261,30 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 val reaction = reactionJsonObject.get("reaction").getAsString();
                 eventInstance.getPlatformData().put(MessengerUtils.REACTION_KEY, reaction);
             }
-            Log.debug("Recognized react event");
-            sendEventInstance(eventInstance, context);
         }
         else if (action.equals("unreact")) {
-            eventInstance.setDefinition(MessageUnreact);
-            Log.debug("Recognized unreact event");
-            sendEventInstance(eventInstance, context);
+            if (!checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) eventInstance.setDefinition(MessageUnreact);
         } else {
             throw new XatkitException("Unrecognised action");
         }
+
+        Log.debug("Recognized {0} event", action);
+        sendEventInstance(eventInstance, context);
     }
 
-    public void produceIntentFromRawText(String text, StateContext context) {
+    private EventInstance produceIntentFromRawText(String text, StateContext context) {
         Log.debug("Recognizing intention from text \"{0}\"", text);
         try {
-            val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(text,
-                    context, this.getRuntimePlatform().getXatkitBot());
+            val recognizedIntent = IntentRecognitionHelper.getRecognizedIntent(
+                    text, context, this.getRuntimePlatform().getXatkitBot());
             recognizedIntent.getPlatformData().put(MessengerUtils.RAW_TEXT_KEY, text);
-            sendEventInstance(recognizedIntent, context);
+            return recognizedIntent;
         } catch (IntentRecognitionProviderException e) {
             throw new XatkitException("An internal error occurred when computing the intent.", e);
         }
+    }
+
+    private boolean checkConfig(String configuration, boolean miss) {
+        return runtimePlatform.getConfiguration().getBoolean(configuration, miss);
     }
 }

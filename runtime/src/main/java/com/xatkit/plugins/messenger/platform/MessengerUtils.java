@@ -13,6 +13,8 @@ public class MessengerUtils {
     public static final String VERIFY_TOKEN_KEY = MESSENGER_CONTEXT + "verify_token";
     public static final String ACCESS_TOKEN_KEY = MESSENGER_CONTEXT + "access_token";
     public static final String APP_SECRET_KEY = MESSENGER_CONTEXT + "app_secret";
+    public static final String INTENT_FROM_POSTBACK = MESSENGER_CONTEXT + "intent_from_postback";
+    public static final String INTENT_FROM_REACTION = MESSENGER_CONTEXT + "intent_from_reaction";
     public static final String HANDLE_REACTIONS_KEY = MESSENGER_CONTEXT + "handle_reactions";
     public static final String HANDLE_DELIVERIES_KEY = MESSENGER_CONTEXT + "handle_deliveries";
     public static final String HANDLE_READ_KEY = MESSENGER_CONTEXT + "handle_read";
@@ -31,6 +33,8 @@ public class MessengerUtils {
     public static final String WEBHOOK_URI = "/messenger/webhook";
     public static final String SEND_API_URL = "https://graph.facebook.com/v8.0/me/messages";
     public static final String ATTACHMENT_UPLOAD_API_URL = "https://graph.facebook.com/v8.0/me/message_attachments";
+    public static final String USE_REACTION_TEXT = "use_reaction_text";
+    public static final String USE_TITLE_TEXT = "use_title_text";
 
 
     public static String calculateRFC2104HMAC(String data, String key) throws NoSuchAlgorithmException, InvalidKeyException {
