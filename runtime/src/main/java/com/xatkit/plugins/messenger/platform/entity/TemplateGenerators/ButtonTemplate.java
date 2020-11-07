@@ -20,7 +20,7 @@ public class ButtonTemplate {
         this.buttons = new ArrayList<>();
     }
 
-    public ButtonTemplate addUrlButton(String title, String url, WebviewHeightRatio webviewHeightRatio) {
+    public ButtonTemplate constructUrlButton(String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
         if (webviewHeightRatio == null) button = new URLButton(url, title);
         else button = new URLButton(url, title, webviewHeightRatio);
@@ -28,7 +28,7 @@ public class ButtonTemplate {
         return this;
     }
 
-    public ButtonTemplate addPostbackButton(String title, String payload) {
+    public ButtonTemplate constructPostbackButton(String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
         else button = new PostbackButton(title, payload);

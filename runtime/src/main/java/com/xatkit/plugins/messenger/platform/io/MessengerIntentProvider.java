@@ -139,7 +139,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             handleDelivery(messagingJsonObject.get("delivery"), context);
         }
 
-        if (checkConfig(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
+        if (checkConfig(MessengerUtils. HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
             handleRead(messagingJsonObject.get("read"), context);
         }
 

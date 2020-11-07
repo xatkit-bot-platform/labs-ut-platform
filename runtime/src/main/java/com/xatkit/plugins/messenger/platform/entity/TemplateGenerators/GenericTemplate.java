@@ -4,10 +4,7 @@ import com.xatkit.plugins.messenger.platform.entity.GenericElement;
 import com.xatkit.plugins.messenger.platform.entity.buttons.*;
 import com.xatkit.plugins.messenger.platform.entity.payloads.GenericTemplatePayload;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GenericTemplate {
 
@@ -18,8 +15,8 @@ public class GenericTemplate {
 
     public GenericTemplate() {
         this.genericElements = new ArrayList<>();
-        this.elementButtons = new HashMap<>();
-        this.buttons = new HashMap<>();
+        this.elementButtons = new TreeMap<>();
+        this.buttons = new TreeMap<>();
         this.imageAspectRatio = GenericTemplatePayload.ImageAspectRatio.horizontal;
     }
 
@@ -32,7 +29,7 @@ public class GenericTemplate {
         return this;
     }
 
-    public GenericTemplate addUrlButtonToElement(int elementID, String title, String url, WebviewHeightRatio webviewHeightRatio) {
+    public GenericTemplate constructUrlButtonToElement(int elementID, String title, String url, WebviewHeightRatio webviewHeightRatio) {
         Button button;
         if (webviewHeightRatio == null) button = new URLButton(url, title);
         else button = new URLButton(url, title, webviewHeightRatio);
@@ -42,8 +39,7 @@ public class GenericTemplate {
         return this;
     }
 
-    //Needs testing as it was added before Postback receiving was implemented
-    public GenericTemplate addPostbackButtonToElement(int elementID, String title, String payload) {
+    public GenericTemplate constructPostbackButtonToElement(int elementID, String title, String payload) {
         Button button;
         if (payload == null) button = new PostbackButton(title);
         else button = new PostbackButton(title, payload);
