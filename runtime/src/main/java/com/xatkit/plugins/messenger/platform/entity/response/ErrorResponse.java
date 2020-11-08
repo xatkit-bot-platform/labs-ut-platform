@@ -4,15 +4,15 @@ import lombok.Getter;
 
 public class ErrorResponse extends Response {
     @Getter
-    private final int code;
+    private final Integer code;
     @Getter
-    private final int subcode;
+    private final Integer subcode;
     @Getter
     private final String fbtraceId;
     @Getter
     private final String message;
 
-    public ErrorResponse(int status, int code, int subcode, String fbtraceId, String message) {
+    public ErrorResponse(Integer status, Integer code, Integer subcode, String fbtraceId, String message) {
         super(status);
         this.code = code;
         this.subcode = subcode;

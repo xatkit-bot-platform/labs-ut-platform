@@ -124,9 +124,11 @@ public class MessengerPlatform extends RestPlatform {
                 Log.error("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
                 if (responseBody.has("error")) {
                     val error = responseBody.get("error").getAsJsonObject();
+                    val code = error.has("code") ? error.get("code").getAsInt() : null;
+                    val subcode = error.has("error_subcode") ? error.get("error_subcode").getAsInt() : null;
                     val fbtraceId = error.has("fbtrace_id") ? error.get("fbtrace_id").getAsString() : null;
                     val message = error.has("message") ? error.get("message").getAsString() : null;
-                    return new ErrorResponse(status, error.get("code").getAsInt(), error.get("error_subcode").getAsInt(), fbtraceId, message);
+                    return new ErrorResponse(status, code, subcode, fbtraceId, message);
                 }
                 return null;
             }
