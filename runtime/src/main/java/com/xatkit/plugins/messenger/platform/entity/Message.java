@@ -1,5 +1,6 @@
 package com.xatkit.plugins.messenger.platform.entity;
 
+import com.xatkit.plugins.messenger.platform.entity.payloads.UploadPayload;
 import lombok.Getter;
 
 public class Message {
@@ -20,6 +21,6 @@ public class Message {
     }
 
     public Message(final Attachment.AttachmentType attachmentType, final String payloadUrl, final boolean isPayloadReusable) {
-        this(new Attachment(attachmentType, new Payload(payloadUrl, isPayloadReusable)));
+        this(new Attachment(attachmentType, new UploadPayload(payloadUrl, isPayloadReusable)));
     }
 }

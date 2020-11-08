@@ -1,6 +1,8 @@
 package com.xatkit.plugins.messenger.platform.entity;
 
 import com.google.gson.annotations.SerializedName;
+import com.xatkit.plugins.messenger.platform.entity.payloads.Payload;
+import com.xatkit.plugins.messenger.platform.entity.payloads.TemplatePayload;
 import lombok.Getter;
 
 public class Attachment {
@@ -16,11 +18,19 @@ public class Attachment {
         @SerializedName("video")
         video,
         @SerializedName("image")
-        image
+        image,
+        @SerializedName("template")
+        template,
+        @SerializedName("file")
+        file
     }
 
     public Attachment(final AttachmentType type, final Payload payload) {
         this.type = type;
         this.payload = payload;
+    }
+
+    public Attachment(final TemplatePayload payload) {
+        this(AttachmentType.template, payload);
     }
 }

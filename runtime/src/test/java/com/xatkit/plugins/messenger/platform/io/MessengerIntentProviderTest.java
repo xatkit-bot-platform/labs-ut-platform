@@ -10,10 +10,11 @@ import com.xatkit.execution.StateContext;
 import com.xatkit.intent.*;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
-import com.xatkit.plugins.messenger.platform.entity.SenderAction;
 import lombok.SneakyThrows;
+import lombok.val;
 import org.apache.commons.configuration2.BaseConfiguration;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.http.HttpEntity;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -27,6 +28,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 import static org.mockito.Mockito.*;
@@ -84,8 +86,6 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         configuration.addProperty(MessengerUtils.HANDLE_REACTIONS_KEY, true);
         configuration.addProperty(MessengerUtils.HANDLE_DELIVERIES_KEY, true);
         configuration.addProperty(MessengerUtils.HANDLE_READ_KEY, true);
-        configuration.addProperty(MessengerUtils.AUTO_MARK_SEEN_KEY, true);
-
         MessengerPlatform messengerPlatform = new MessengerPlatform();
         messengerPlatform.start(mockedXatkitBot, configuration);
         return messengerPlatform;
@@ -151,12 +151,11 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
     public void verify200ResponseForTextlessMessage() throws RestHandlerException, NoSuchAlgorithmException, InvalidKeyException {
         provider = new MessengerIntentProvider(platform);
         provider.start(configuration);
-        int expectedCount = platform.getMessagesSent() + 1;
-        provider.createRestHandler().handleContent(
+        val response = provider.createRestHandler().handleContent(
                 generateHeaders(TEXTLESS_MESSAGE, platform.getAppSecret()),
                 new ArrayList<>(),
                 TEXTLESS_MESSAGE);
-        assertThat(platform.getMessagesSent()).isEqualTo(expectedCount);
+        assertThat(response).isInstanceOf(HttpEntity.class);
     }
 
     @Test
@@ -201,6 +200,9 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageReact);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_ID_KEY)).isEqualTo(MESSAGE_ID);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.REACTION_KEY)).isEqualTo(REACTION);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.EMOJI_KEY)).isEqualTo(EMOJI);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -216,6 +218,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageUnreact);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_ID_KEY)).isEqualTo(MESSAGE_ID);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -232,6 +235,7 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageRead);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.WATERMARK_KEY)).isEqualTo(WATERMARK);
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 
@@ -248,6 +252,31 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
         EventInstance sentEvent = eventCaptor.getValue();
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessageDelivered);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.WATERMARK_KEY)).isEqualTo(WATERMARK);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.MESSAGE_IDS_KEY)).asList().contains(MESSAGE_ID);
+        verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
+    }
+
+    @Test
+    public void handlePostback() throws NoSuchAlgorithmException, InvalidKeyException, RestHandlerException {
+        provider = new MessengerIntentProvider(platform);
+        provider.start(configuration);
+        provider.createRestHandler().handleContent(
+                generateHeaders(POSTBACK_MESSAGE, platform.getAppSecret()),
+                new ArrayList<>(),
+                POSTBACK_MESSAGE);
+
+        ArgumentCaptor<EventInstance> eventCaptor = ArgumentCaptor.forClass(EventInstance.class);
+        verify(mockedExecutionService, times(1)).handleEventInstance(eventCaptor.capture(), any(StateContext.class));
+        EventInstance sentEvent = eventCaptor.getValue();
+
+        assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessagePostback);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_TITLE_KEY)).isEqualTo(POSTBACK_TITLE);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_PAYLOAD_KEY)).isEqualTo(POSTBACK_PAYLOAD);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_REF_KEY)).isEqualTo(POSTBACK_REFFERAL_REF);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_SOURCE_KEY)).isEqualTo(POSTBACK_REFFERAL_SOURCE);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY)).isEqualTo(POSTBACK_REFFERAL_TYPE);
+
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
 

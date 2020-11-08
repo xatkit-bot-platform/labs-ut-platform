@@ -16,6 +16,15 @@ public class MessengerIntentProviderTestUtils {
     public static final String APP_SECRET = "TEST_APP_SECRET";
     public static final String MESSAGE_TEXT = "hello";
     public static final long WATERMARK = 1458668856253L;
+    public static final String REACTION = "wow";
+    public static final String EMOJI = "\uD83D\uDE2F";
+
+    public static final String POSTBACK_TITLE = "RANDOM TITLE";
+    public static final String POSTBACK_PAYLOAD = "14304ueofin";
+    public static final String POSTBACK_REFFERAL_REF = "erwijio";
+    public static final String POSTBACK_REFFERAL_SOURCE = "SHORTLINK";
+    public static final String POSTBACK_REFFERAL_TYPE = "OPEN_THREAD";
+
     public static final String CORRECT_CONTENT =
             "{\n" +
             "  \"object\":\"page\",\n" +
@@ -156,8 +165,8 @@ public class MessengerIntentProviderTestUtils {
             "            \"id\":\"" + RECIPIENT_PSID + "\"\n" +
             "          },\n" +
             "          \"reaction\":{\n" +
-            "            \"reaction\":\"wow\",\n" +
-            "            \"emoji\":\"\uD83D\uDE2F\",\n" +
+            "            \"reaction\":\"" + REACTION + "\",\n" +
+            "            \"emoji\":\"" + EMOJI + "\",\n" +
             "            \"action\":\"react\",\n" +
             "            \"mid\":\"" + MESSAGE_ID + "\"\n" +
             "          }\n" +
@@ -236,6 +245,37 @@ public class MessengerIntentProviderTestUtils {
                     "                   \"" + MESSAGE_ID + "\"\n" +
                     "                   ],\n" +
                     "               \"watermark\":" + WATERMARK + "\n" +
+                    "           }\n" +
+                    "       }\n" +
+                    "     ]\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
+
+    public static final String POSTBACK_MESSAGE =
+            "{\n" +
+                    "  \"object\":\"page\",\n" +
+                    "  \"entry\":[\n" +
+                    "    {\n" +
+                    "      \"id\":\"<PAGE_ID>\",\n" +
+                    "      \"time\":1458692752478,\n" +
+                    "      \"messaging\":[\n" +
+                    "       {\n" +
+                    "           \"sender\":{\n" +
+                    "                \"id\":\"" + SENDER_ID + "\"\n" +
+                    "           },\n" +
+                    "           \"recipient\":{\n" +
+                    "               \"id\":\"" + RECIPIENT_PSID + "\"\n" +
+                    "           },\n" +
+                    "           \"timestamp\":1458668856463,\n" +
+                    "           \"postback\":{\n" +
+                    "               \"title\":\"" + POSTBACK_TITLE + "\",\n" +
+                    "               \"payload\":\"" + POSTBACK_PAYLOAD + "\",\n" +
+                    "               \"refferal\": {\n" +
+                    "                   \"ref\":\"" + POSTBACK_REFFERAL_REF + "\",\n" +
+                    "                   \"source\":\"" + POSTBACK_REFFERAL_SOURCE + "\",\n" +
+                    "                   \"type\":\"" + POSTBACK_REFFERAL_TYPE + "\"\n" +
+                    "                }\n" +
                     "           }\n" +
                     "       }\n" +
                     "     ]\n" +

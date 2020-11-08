@@ -6,6 +6,7 @@ import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.MessengerUtils;
 import com.xatkit.plugins.messenger.platform.entity.Messaging;
 import com.xatkit.plugins.rest.platform.action.PostJsonRequestWithBody;
+import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import org.apache.http.HttpHeaders;
 
