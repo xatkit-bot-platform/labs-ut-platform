@@ -19,6 +19,7 @@ public class MessengerUtils {
     public static final String HANDLE_DELIVERIES_KEY = MESSENGER_CONTEXT + "handle_deliveries";
     public static final String HANDLE_READ_KEY = MESSENGER_CONTEXT + "handle_read";
     public static final String AUTO_MARK_SEEN_KEY = MESSENGER_CONTEXT + "auto_seen";
+    public static final String NATURALIZE_TEXT = MESSENGER_CONTEXT + "naturalize_text";
     public static final String RAW_TEXT_KEY = "raw_text";
     public static final String MESSAGE_ID_KEY = "mid";
     public static final String MESSAGE_IDS_KEY = "mids";
