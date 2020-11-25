@@ -98,9 +98,14 @@ public class MessengerPlatform extends RestPlatform {
         return sendFile(context, attachmentId, file.getAttachment().getType());
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull String text) {
-        if (getConfiguration().getBoolean(MessengerUtils.NATURALIZE_TEXT, false)) text = TextNaturalizer.get().naturalize(text);
+    public Response reply(@NonNull StateContext context, @NonNull String text, boolean naturalize) {
+        if (naturalize && getConfiguration().getBoolean(MessengerUtils.NATURALIZE_TEXT, false))  {
+            text = TextNaturalizer.get().naturalize(text);
+        }
+        return reply(context,text);
+    }
 
+    public Response reply(@NonNull StateContext context, @NonNull String text) {
         return reply(context, new Message(text));
     }
 
