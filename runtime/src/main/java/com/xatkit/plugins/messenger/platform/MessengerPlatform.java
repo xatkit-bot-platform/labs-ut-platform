@@ -2,15 +2,15 @@ package com.xatkit.plugins.messenger.platform;
 
 import com.google.gson.JsonElement;
 import com.xatkit.core.XatkitBot;
+import com.xatkit.core.XatkitException;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.action.*;
 import com.xatkit.plugins.messenger.platform.entity.*;
 import com.xatkit.plugins.messenger.platform.entity.payloads.AttachmentIdPayload;
-import com.xatkit.plugins.messenger.platform.entity.response.ErrorResponse;
-import com.xatkit.plugins.messenger.platform.entity.response.Response;
-import com.xatkit.plugins.messenger.platform.entity.response.SendResponse;
+import com.xatkit.plugins.messenger.platform.entity.response.MessengerException;
+import com.xatkit.plugins.messenger.platform.entity.response.MessengerResponse;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import com.xatkit.plugins.rest.platform.action.JsonRestRequest;
 import com.xatkit.plugins.rest.platform.utils.ApiResponse;
@@ -18,12 +18,14 @@ import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
 import lombok.var;
+import okhttp3.Response;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.entity.StringEntity;
 
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 import static java.util.Objects.requireNonNull;
 
@@ -59,22 +61,22 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
-    public Response markSeen(@NonNull StateContext context) {
+    public MessengerResponse markSeen(@NonNull StateContext context) {
         return sendAction(context, SenderAction.markSeen);
     }
 
-    public Response sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
+    public MessengerResponse sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("Replying to {0} with a sender_action {1}", recipientId, senderAction.name());
         val messaging = new Messaging(new Recipient(recipientId), senderAction);
         return reply(new Reply(this, context, messaging));
     }
 
-    public Response uploadFile(@NonNull StateContext context, File file) {
+    public MessengerResponse uploadFile(@NonNull StateContext context, File file) {
         return excecuteRequest(new FileReply(this, context, file));
     }
 
-    public Response sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
+    public MessengerResponse sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         val messaging = new Messaging(
                 new Recipient(recipientId),
@@ -84,47 +86,44 @@ public class MessengerPlatform extends RestPlatform {
         );
     }
 
-    public Response sendFile(@NonNull StateContext context, @NonNull File file) {
+    public MessengerResponse sendFile(@NonNull StateContext context, @NonNull File file) {
         var attachmentId = file.getAttachmentId(); //I did not use the custom extractContextId here, so this is a potential error place
         if (StringUtils.isEmpty(attachmentId)) {
             val response = uploadFile(context, file);
-            if (!(response instanceof SendResponse)) {
-                Log.error("Could not upload the file.");
-                return response;
-            }
-            attachmentId = ((SendResponse) response).getAttachmentId();
+            attachmentId = response.getAttachmentId();
         }
 
         return sendFile(context, attachmentId, file.getAttachment().getType());
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull String text, boolean naturalize) {
+
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull String text, boolean naturalize) {
         if (naturalize && getConfiguration().getBoolean(MessengerUtils.NATURALIZE_TEXT, false))  {
             text = TextNaturalizer.get().naturalize(text);
         }
         return reply(context,text);
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull String text) {
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull String text) {
         return reply(context, new Message(text));
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull Attachment attachment) {
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull Attachment attachment) {
         return reply(context, new Message(attachment));
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull Message message) {
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull Message message) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("REPLYING TO: {0}", recipientId);
         val messaging = new Messaging(new Recipient(recipientId), message);
         return reply(new MessageReply(this, context, messaging));
     }
 
-    private Response reply(@NonNull Reply reply) {
+    private MessengerResponse reply(@NonNull Reply reply) {
         return excecuteRequest(reply);
     }
 
-    private Response excecuteRequest(JsonRestRequest<JsonElement> request) {
+    private MessengerResponse excecuteRequest(JsonRestRequest<JsonElement> request) {
         val result = request.call().getResult();
 
         if (result instanceof ApiResponse) {
@@ -139,18 +138,19 @@ public class MessengerPlatform extends RestPlatform {
                     val subcode = error.has("error_subcode") ? error.get("error_subcode").getAsInt() : null;
                     val fbtraceId = error.has("fbtrace_id") ? error.get("fbtrace_id").getAsString() : null;
                     val message = error.has("message") ? error.get("message").getAsString() : null;
-                    return new ErrorResponse(status, code, subcode, fbtraceId, message);
+                    throw new MessengerException(status, code, subcode, fbtraceId, message);
                 }
-                return null;
+                throw new XatkitException(apiResponse.getStatusText());
             }
             Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
             val recipientId = responseBody.has("recipient_id") ? responseBody.get("recipient_id").getAsString() : null;
             val attachmentId = responseBody.has("attachment_id") ? responseBody.get("attachment_id").getAsString() : null;
             val messageId = responseBody.has("message_id") ? responseBody.get("message_id").getAsString() : null;
-            return new SendResponse(status, recipientId, messageId, attachmentId);
+            return new MessengerResponse(status, recipientId, messageId, attachmentId);
         }
-        Log.error("Unexpected reply result: {0}", result);
-        return null;
+        val error_message = MessageFormat.format("Unexpected reply result: {0}", result);
+        Log.error(error_message);
+        throw new XatkitException(error_message);
     }
 
     public String getAppSecret() {

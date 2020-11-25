@@ -132,7 +132,11 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val context = this.xatkitBot.getOrCreateContext(id);
 
         if (checkConfig(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
-            this.getRuntimePlatform().markSeen(context);
+            try {
+                this.getRuntimePlatform().markSeen(context);
+            } catch (XatkitException e) {
+                Log.error(e, "Automatic mark as seen threw an exception (since it is an experimental feature, this might be expected)");
+            }
         }
 
         if (checkConfig(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
@@ -158,7 +162,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     private void handlePostback(JsonElement postback, StateContext context) {
         val postbackObject = postback.getAsJsonObject();
-        EventInstance eventInstance = null;
+        EventInstance eventInstance;
         if (checkConfig(MessengerUtils.INTENT_FROM_POSTBACK, false)) {
             String text = null;
             if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_TITLE_TEXT, false)) {
@@ -232,7 +236,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     private void handleReaction(JsonElement reactionElement, StateContext context) {
         val reactionJsonObject = reactionElement.getAsJsonObject();
-        EventInstance eventInstance = null;
+        EventInstance eventInstance;
         if (checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) {
             String text = null;
             if (reactionJsonObject.has("reaction") && checkConfig(MessengerUtils.USE_REACTION_TEXT, false)) {
