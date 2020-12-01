@@ -21,9 +21,9 @@ public class MessengerIntentProviderTestUtils {
 
     public static final String POSTBACK_TITLE = "RANDOM TITLE";
     public static final String POSTBACK_PAYLOAD = "14304ueofin";
-    public static final String POSTBACK_REFFERAL_REF = "erwijio";
-    public static final String POSTBACK_REFFERAL_SOURCE = "SHORTLINK";
-    public static final String POSTBACK_REFFERAL_TYPE = "OPEN_THREAD";
+    public static final String POSTBACK_REFERRAL_REF = "erwijio";
+    public static final String POSTBACK_REFERRAL_SOURCE = "SHORTLINK";
+    public static final String POSTBACK_REFERRAL_TYPE = "OPEN_THREAD";
 
     public static final String CORRECT_CONTENT =
             "{\n" +
@@ -271,10 +271,10 @@ public class MessengerIntentProviderTestUtils {
                     "           \"postback\":{\n" +
                     "               \"title\":\"" + POSTBACK_TITLE + "\",\n" +
                     "               \"payload\":\"" + POSTBACK_PAYLOAD + "\",\n" +
-                    "               \"refferal\": {\n" +
-                    "                   \"ref\":\"" + POSTBACK_REFFERAL_REF + "\",\n" +
-                    "                   \"source\":\"" + POSTBACK_REFFERAL_SOURCE + "\",\n" +
-                    "                   \"type\":\"" + POSTBACK_REFFERAL_TYPE + "\"\n" +
+                    "               \"referral\": {\n" +
+                    "                   \"ref\":\"" + POSTBACK_REFERRAL_REF + "\",\n" +
+                    "                   \"source\":\"" + POSTBACK_REFERRAL_SOURCE + "\",\n" +
+                    "                   \"type\":\"" + POSTBACK_REFERRAL_TYPE + "\"\n" +
                     "                }\n" +
                     "           }\n" +
                     "       }\n" +
