@@ -26,9 +26,9 @@ public class MessengerUtils {
     public static final String WATERMARK_KEY = "watermark";
     public static final String POSTBACK_TITLE_KEY = "title";
     public static final String POSTBACK_PAYLOAD_KEY = "payload";
-    public static final String POSTBACK_REFFERAL_REF_KEY = "refferal.ref";
-    public static final String POSTBACK_REFFERAL_SOURCE_KEY = "refferal.source";
-    public static final String POSTBACK_REFFERAL_TYPE_KEY = "refferal.type";
+    public static final String POSTBACK_REFERRAL_REF_KEY = "referral.ref";
+    public static final String POSTBACK_REFERRAL_SOURCE_KEY = "referral.source";
+    public static final String POSTBACK_REFERRAL_TYPE_KEY = "referral.type";
     public static final String EMOJI_KEY = "emoji";
     public static final String REACTION_KEY = "reaction";
     public static final String WEBHOOK_URI = "/messenger/webhook";

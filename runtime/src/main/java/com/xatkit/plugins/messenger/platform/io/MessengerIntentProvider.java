@@ -7,7 +7,6 @@ import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
 import com.xatkit.dsl.DSL;
-import com.xatkit.execution.State;
 import com.xatkit.execution.StateContext;
 import com.xatkit.intent.EventDefinition;
 import com.xatkit.intent.EventInstance;
@@ -185,14 +184,14 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_PAYLOAD_KEY, payload);
         }
 
-        if (postbackObject.has("refferal")) {
-            val refferal = postbackObject.get("refferal").getAsJsonObject();
-            val ref = refferal.get("ref").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_REF_KEY, ref);
-            val source = refferal.get("source").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_SOURCE_KEY, source);
-            val type = refferal.get("type").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY, type);
+        if (postbackObject.has("referral")) {
+            val referral = postbackObject.get("referral").getAsJsonObject();
+            val ref = referral.get("ref").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_REF_KEY, ref);
+            val source = referral.get("source").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_SOURCE_KEY, source);
+            val type = referral.get("type").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_TYPE_KEY, type);
         }
 
         sendEventInstance(eventInstance, context);

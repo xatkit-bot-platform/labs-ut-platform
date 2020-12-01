@@ -28,7 +28,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.List;
 
 import static java.util.Objects.nonNull;
 import static org.mockito.Mockito.*;
@@ -273,9 +272,9 @@ public class MessengerIntentProviderTest extends AbstractEventProviderTest<Messe
         assertThat(sentEvent.getDefinition()).isEqualTo(MessengerIntentProvider.MessagePostback);
         assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_TITLE_KEY)).isEqualTo(POSTBACK_TITLE);
         assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_PAYLOAD_KEY)).isEqualTo(POSTBACK_PAYLOAD);
-        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_REF_KEY)).isEqualTo(POSTBACK_REFFERAL_REF);
-        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_SOURCE_KEY)).isEqualTo(POSTBACK_REFFERAL_SOURCE);
-        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY)).isEqualTo(POSTBACK_REFFERAL_TYPE);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFERRAL_REF_KEY)).isEqualTo(POSTBACK_REFERRAL_REF);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFERRAL_SOURCE_KEY)).isEqualTo(POSTBACK_REFERRAL_SOURCE);
+        assertThat(sentEvent.getPlatformData().get(MessengerUtils.POSTBACK_REFERRAL_TYPE_KEY)).isEqualTo(POSTBACK_REFERRAL_TYPE);
 
         verify(mockedXatkitBot, times(1)).getOrCreateContext(eq(SENDER_ID));
     }
