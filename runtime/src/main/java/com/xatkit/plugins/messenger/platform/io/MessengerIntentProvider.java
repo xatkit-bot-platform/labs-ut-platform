@@ -186,7 +186,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         EventInstance eventInstance;
         if (checkConfig(MessengerUtils.INTENT_FROM_POSTBACK, false)) {
             String text = null;
-            if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_TITLE_TEXT, false)) {
+            if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_POSTBACK_TITLE_TEXT, false)) {
                 text = postbackObject.get("title").getAsString();
             } else if (postbackObject.has("emoji")) {
                 text = postbackObject.get("emoji").getAsString();
