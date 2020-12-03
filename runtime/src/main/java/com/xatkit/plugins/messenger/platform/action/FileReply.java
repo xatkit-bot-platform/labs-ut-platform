@@ -17,12 +17,18 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * FileReply
+ * Used for replying with files.
+ *
+ * @see MessageReply
+ */
 public class FileReply extends JsonRestRequest<JsonElement> {
     private static final Gson gson = new Gson();
     private final File file;
 
     /**
-     * Constructs a POST Json request with form data parameters
+     * Constructs a reply for sending files
      *
      * @param platform     the {@link MessengerPlatform} containing this action
      * @param context      the {@link StateContext} associated to this action
@@ -33,18 +39,31 @@ public class FileReply extends JsonRestRequest<JsonElement> {
         this.file = file;
     }
 
+    /**
+     * Generates headers for the POST request.
+     *
+     * @param platform the {@link MessengerPlatform} calling the action
+     * @return generated headers
+     */
     private static Map<String, String> generateHeaders(MessengerPlatform platform) {
         val headers = new HashMap<String, String>();
         headers.put(HttpHeaders.AUTHORIZATION, "Bearer " + platform.getAccessToken());
         return headers;
     }
 
+    /**
+     * Generates parameters for the POST request.
+     *
+     * @param file the {@link File} sent
+     * @return generated parameters
+     */
     private static Map<String, Object> generateParams(File file) {
         Map<String, Object> params = new LinkedHashMap<>();
         params.put("message", gson.toJsonTree(new Message(file.getAttachment())));
         return params;
     }
 
+    @Override
     protected HttpRequest buildRequest() {
         return Unirest
                 .post(this.restEndpoint)
