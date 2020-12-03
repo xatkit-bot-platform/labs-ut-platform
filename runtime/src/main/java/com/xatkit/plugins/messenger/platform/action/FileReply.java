@@ -30,9 +30,9 @@ public class FileReply extends JsonRestRequest<JsonElement> {
     /**
      * Constructs a reply for sending files
      *
-     * @param platform     the {@link MessengerPlatform} containing this action
-     * @param context      the {@link StateContext} associated to this action
-     * @param file         the information related to the file to be sent;
+     * @param platform the {@link MessengerPlatform} containing this action
+     * @param context  the {@link StateContext} associated to this action
+     * @param file     the information related to the file to be sent;
      */
     public FileReply(MessengerPlatform platform, StateContext context, File file) {
         super(platform, context, MethodKind.POST, MessengerUtils.ATTACHMENT_UPLOAD_API_URL, null, null, null, generateHeaders(platform), generateParams(file));

@@ -24,9 +24,9 @@ public class Reply extends PostJsonRequestWithBody {
     /**
      * Constructs a Reply
      *
-     * @param platform     the {@link MessengerPlatform} containing this action
-     * @param context      the {@link StateContext} associated to this action
-     * @param messaging  the body of the request
+     * @param platform  the {@link MessengerPlatform} containing this action
+     * @param context   the {@link StateContext} associated to this action
+     * @param messaging the body of the request
      */
     public Reply(MessengerPlatform platform, StateContext context, Messaging messaging) {
         super(platform, context, MessengerUtils.SEND_API_URL, null, null, gson.toJsonTree(messaging), generateHeaders(platform));
