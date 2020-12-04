@@ -16,11 +16,11 @@ This connector utilizes the [Messenger Platform API](https://developers.facebook
 
 | Event | Context | Parameters | Description |
 | ----- | ------- | ---------- | ----------- |
-| Message_Delivered | ? | - `mids`: The id of the delivered message | Event sent when a message is delivered. **Note**: this event is only created when the `xatkit.messenger_handle_deliveries` is set to `true`. |
-| Message_Read | ? | - `watermark`: The number of messages delivered | Event sent when the user sees a message. **Note**: this event is only created when the `xatkit.messenger_handle_read` is set to `true`. |
-| Message_React | ? | - `mid`: The id of the message reacted to<br/> - `emoji`: The Unicode character of the emoji<br/> - `reaction`: The natural language interpretation of the emoji | Event sent when the user reacts to a message. **Note**: this event is only created when the `xatkit.messenger_handle_reactions` is set to `true`. |
-| Message_Unreact | ? | - `mid`: The id of the message the reaction was removed from | Event sent when a reaction is removed from a message. **Note**: this event is only created when the `xatkit.messenger_handle_reactions` is set to `true`. |
-| Message_Postback | ? | - `title`: The displayed text of a postback button<br/> - `payload`: The payload of a postback button<br/> - `refferal.ref`: The refferal ref attribute<br/> - `refferal.source` The referral origin<br/> - `refferal.type`: The refferal type | Event sent when the user click on a postback button in a button template. |
+| Message_Delivered | ? | - `mids`: The id of the delivered message | Event sent when a message is delivered. **Note**: this event is only created when the `xatkit.messenger.handle_deliveries` is set to `true`. |
+| Message_Read | ? | - `watermark`: The number of messages delivered | Event sent when the user sees a message. **Note**: this event is only created when the `xatkit.messenger.handle_read` is set to `true`. |
+| Message_React | ? | - `mid`: The id of the message reacted to<br/> - `emoji`: The Unicode character of the emoji<br/> - `reaction`: The natural language interpretation of the emoji | Event sent when the user reacts to a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
+| Message_Unreact | ? | - `mid`: The id of the message the reaction was removed from | Event sent when a reaction is removed from a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
+| Message_Postback | ? | - `title`: The displayed text of a postback button<br/> - `payload`: The payload of a postback button<br/> - `xatkit.messenger.postback.referral.ref`: The refferal ref attribute<br/> - `xatkit.messenger.postback.referral.source` The referral origin<br/> - `xatkit.messenger.postback.referral.type`: The refferal type | Event sent when the user click on a postback button in a button template. |
 
 ## Actions
 
@@ -45,12 +45,12 @@ The Messenger Platform supports the following configuration options.
 | `xatkit.messenger.verify_token` | String | The [Messenger](https://developers.facebook.com/docs/messenger-platform/getting-started/app-setup) token given to the API to connect to the bot | **Mandatory** |
 | `xatkit.messenger.access_token` | String | The [Messenger](https://developers.facebook.com/docs/facebook-login/access-tokens/?locale=en_US) token used by the bot to connect to the API | **Mandatory** |
 | `xatkit.messenger.app_secret` | String | The [Messenger](https://developers.facebook.com/docs/facebook-login/security/) encryption secret | **Mandatory** |
-| `xatkit.messenger. handle _reactions` | Boolean | Generate events from when the user reacts to a message | **Optional** (default `false`) |
-| `xatkit.messenger. handle _deliveries` | Boolean | Generate events when a message is delivered | **Optional** (default `false`) |
-| `xatkit.messenger. handle _reads` | Boolean | Generate events when the user reads a message | **Optional** (default `false`) |
+| `xatkit.messenger.handle_reactions` | Boolean | Generate events from when the user reacts to a message | **Optional** (default `false`) |
+| `xatkit.messenger.handle_deliveries` | Boolean | Generate events when a message is delivered | **Optional** (default `false`) |
+| `xatkit.messenger.handle_reads` | Boolean | Generate events when the user reads a message | **Optional** (default `false`) |
 | `xatkit.messenger.intent_from_postback` | Boolean | Generate intents instead of events when the user interacts with the postback button | **Optional** (default `false`) |
-| `xatkit.messenger.intent_from_reactions` | Boolean | Generate intents instead of events when the user reacts to a message |  **Optional** (default `false`) |
-| `xatkit.messenger.use_reactions_text` | Boolean | Use natural language interpretations of emojis instead of emojis themselves when generating intents from reactions | **Optional** (default `false`) |
+| `xatkit.messenger.intent_from_reaction` | Boolean | Generate intents instead of events when the user reacts to a message |  **Optional** (default `false`) |
+| `xatkit.messenger.use_reaction_text` | Boolean | Use natural language interpretations of emojis instead of emojis themselves when generating intents from reactions | **Optional** (default `false`) |
 | `xatkit.messenger.use_title_text` | Boolean | Use the button titles instead of their payloads when generating intents from postbacks | **Optional** (default `false`) |
 | `xatkit.messenger.auto_seen` | Boolean |  Automatically mark the user's messages as seen | **Optional** (default `false`) |
 | `xatkit.messenger.naturalize_text` | Boolean | Naturalize text when using the method that naturalizes text | **Optional** (default `false`) |
