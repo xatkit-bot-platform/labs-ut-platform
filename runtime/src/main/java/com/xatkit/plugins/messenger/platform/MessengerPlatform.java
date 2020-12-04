@@ -112,8 +112,7 @@ public class MessengerPlatform extends RestPlatform {
                 new Recipient(recipientId),
                 new Message(new Attachment(attachmentType, new AttachmentIdPayload(attachmentId))));
         Log.debug("SENDING FILE TO: {0}", recipientId);
-        return reply(new Reply(this, context, messaging)
-        );
+        return reply(new MessageReply(this, context, messaging));
     }
 
     /**
