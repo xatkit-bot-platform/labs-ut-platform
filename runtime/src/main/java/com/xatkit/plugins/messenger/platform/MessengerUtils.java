@@ -1,5 +1,6 @@
 package com.xatkit.plugins.messenger.platform;
 
+import fr.inria.atlanmod.commons.log.Log;
 import org.apache.commons.codec.binary.Hex;
 
 import javax.crypto.Mac;

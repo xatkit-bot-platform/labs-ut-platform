@@ -83,6 +83,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 Log.debug("Received content.");
                 try {
                     checkArgument(nonNull(content), "Missing content.");
+                    //logEntity(headers,params, content.getRawContent());
                     verifyValidation(headers, content.getRawContent());
 
                     requireNonNull(content.getJsonElement().getAsJsonObject().get("entry"), "Missing entry.")
@@ -95,6 +96,20 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 }
             }
         };
+    }
+
+    private void logEntity(List<Header> headers, List<NameValuePair> params, final String jsonConent) {
+        Log.debug("HTTP ENTITY");
+        Log.debug("Headers");
+        for (Header header : headers) {
+            Log.debug("{0} : {1}", header.getName(), header.getValue());
+        }
+        Log.debug("Parameters");
+        for (NameValuePair nameValuePair : params) {
+            Log.debug("{0} : {1}", nameValuePair.getName(), nameValuePair.getValue());
+        }
+        Log.debug("Content : {0}", jsonConent);
+        Log.debug("END OF HTTP ENTITY");
     }
 
     private void verifyValidation(final List<Header> headers, final String content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
