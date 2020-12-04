@@ -1,11 +1,13 @@
 package com.xatkit.plugins.messenger.platform.action;
 
+import com.google.gson.JsonElement;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.xatkit.core.platform.action.RuntimeActionResult;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.MessengerPlatform;
 import com.xatkit.plugins.messenger.platform.entity.Messaging;
 import com.xatkit.plugins.messenger.platform.entity.SenderAction;
+import com.xatkit.plugins.rest.platform.utils.ApiResponse;
 import fr.inria.atlanmod.commons.log.Log;
 
 import java.io.IOException;
@@ -14,6 +16,14 @@ import static com.xatkit.core.platform.action.RuntimeArtifactAction.DEFAULT_MESS
 import static com.xatkit.core.platform.action.RuntimeArtifactAction.MESSAGE_DELAY_KEY;
 import static java.util.Objects.nonNull;
 
+/**
+ * MessageReply action based on {@link Reply}.
+ * Delay is applied before sending the reply (if so configured).
+ * If sending resulted in an IOException (typically caused by a connection issue)
+ * the message will be sent again up to 3 times.
+ *
+ * @see Reply
+ */
 public class MessageReply extends Reply {
     private final int messageDelay;
     private final Messaging messaging;
@@ -22,8 +32,7 @@ public class MessageReply extends Reply {
     private static final int RETRY_WAIT_TIME = 500;
 
     /**
-     * Constructs a POST Json request with a body parameter.
-     * Delay is applied before sending the reply.
+     * Constructs a Reply
      *
      * @param platform  the {@link MessengerPlatform} containing this action
      * @param context   the {@link StateContext} associated to this action
@@ -36,8 +45,13 @@ public class MessageReply extends Reply {
     }
 
 
-    // this class should be refactored so that it extends RuntimeArtifactAction.
-    // this call method is a quick and dirty solution
+    /**
+     * Based on {@link com.xatkit.core.platform.action.RuntimeArtifactAction}.
+     * This class should be refactored so that it extends RuntimeArtifactAction.
+     * This call method is a quick and dirty solution.
+     *
+     * @see com.xatkit.core.platform.action.RuntimeArtifactAction
+     */
     @Override
     public RuntimeActionResult call() {
         Object computationResult = null;
@@ -76,17 +90,13 @@ public class MessageReply extends Reply {
                 }
             }
             try {
-                if (messageDelay > 0) {
+                if (isDelay(this.messageDelay)) {
                     beforeDelay();
                     waitMessageDelay();
                     afterDelay();
                 }
 
-                try {
-                    computationResult = this.compute();
-                } catch (UnirestException e) {
-                    throw (Exception) e.getCause();
-                }
+                computationResult = computeAndUnwrapUnirestExceptions();
 
             } catch (IOException e) {
                 if (attempts < IO_ERROR_RETRIES + 1) {
@@ -119,20 +129,58 @@ public class MessageReply extends Reply {
         return new RuntimeActionResult(computationResult, thrownException, (after - before));
     }
 
+    /**
+     * Waits the time specified in the configuration.
+     * Waits only if the message contains text.
+     */
     private void waitMessageDelay() {
-        if (this.messageDelay > 0 && messaging.getMessage() != null && messaging.getMessage().getText() != null) {
-            try {
-                Thread.sleep(messageDelay);
-            } catch (InterruptedException e) {
-                Log.error("An error occurred when waiting for the message delay, see attached exception", e);
-            }
+        try {
+            Thread.sleep(messageDelay);
+        } catch (InterruptedException e) {
+            Log.error("An error occurred when waiting for the message delay, see attached exception", e);
         }
     }
 
+    /**
+     * Excecutes the this.compute() and returns the results.
+     * If {@link UnirestException} is thrown, then the nested exception is unwrapped
+     * so that it can be caught in this.call()
+     *
+     * @return this.compute() result
+     */
+    protected final ApiResponse<JsonElement> computeAndUnwrapUnirestExceptions() throws Exception {
+        try {
+            return this.compute();
+        } catch (UnirestException e) {
+            if (e.getCause() instanceof Exception) {
+                throw (Exception) e.getCause();
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Checks if delay should be applied.
+     * Only applies delay if delay time is greater than zero
+     * and message contains text (otherwise typing animation will not make sense)
+     *
+     * @param messageDelay int - the length of the delay (in milliseconds)
+     * @return true if delay should be applied else false
+     */
+    protected boolean isDelay(int messageDelay) {
+        return messageDelay > 0 && messaging.getMessage() != null && messaging.getMessage().getText() != null;
+    }
+
+    /**
+     * Typying animation on before delay
+     */
     protected void beforeDelay() {
         ((MessengerPlatform) runtimePlatform).sendAction(context, SenderAction.typingOn);
     }
 
+    /**
+     * Typing animation off after delay
+     */
     protected void afterDelay() {
         ((MessengerPlatform) runtimePlatform).sendAction(context, SenderAction.typingOff);
     }
