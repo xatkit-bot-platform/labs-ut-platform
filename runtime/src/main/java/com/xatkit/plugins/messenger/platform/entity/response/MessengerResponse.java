@@ -5,16 +5,21 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
-public class SendResponse extends Response {
+/**
+ * Response from Facebook after successfully sending a request.
+ */
+public class MessengerResponse {
     @Getter
     private final String recipientId;
     @Getter
     private final String messageId;
     @Getter
     private final String attachmentId;
+    @Getter
+    private final int status;
 
-    public SendResponse(@NonNull int status, @Nullable String recipientId, @Nullable String messageId, @Nullable String attachmentId) {
-        super(status);
+    public MessengerResponse(@NonNull int status, @Nullable String recipientId, @Nullable String messageId, @Nullable String attachmentId) {
+        this.status = status;
         this.recipientId = recipientId;
         this.messageId = messageId;
         this.attachmentId = attachmentId;

@@ -1,4 +1,4 @@
-package com.xatkit.plugins.messenger.platform.entity.TemplateGenerators;
+package com.xatkit.plugins.messenger.platform.entity.templates;
 
 import com.xatkit.plugins.messenger.platform.entity.GenericElement;
 import com.xatkit.plugins.messenger.platform.entity.buttons.*;

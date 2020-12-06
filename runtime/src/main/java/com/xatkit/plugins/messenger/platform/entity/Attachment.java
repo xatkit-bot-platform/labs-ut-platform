@@ -5,6 +5,12 @@ import com.xatkit.plugins.messenger.platform.entity.payloads.Payload;
 import com.xatkit.plugins.messenger.platform.entity.payloads.TemplatePayload;
 import lombok.Getter;
 
+/**
+ * Used for sending attachments such as files or templates.
+ * Media/attachment (audio, video, files) other than images
+ * won't be supported by Facebook for European users since 16th of December 2020.
+ * @see Message
+ */
 public class Attachment {
     @Getter
     private final AttachmentType type;

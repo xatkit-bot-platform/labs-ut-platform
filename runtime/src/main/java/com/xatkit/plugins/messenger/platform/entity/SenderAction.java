@@ -2,6 +2,10 @@ package com.xatkit.plugins.messenger.platform.entity;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * Actions that can be sent to Facebook.
+ * @see Messaging
+ */
 public enum SenderAction {
     @SerializedName("typing_on")
     typingOn,

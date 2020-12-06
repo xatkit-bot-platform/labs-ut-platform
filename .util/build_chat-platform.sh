@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # This is required because Xatkit is not yet on Maven Central or similar
 
 # Print a message

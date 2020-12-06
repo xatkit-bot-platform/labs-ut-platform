@@ -7,7 +7,9 @@ import lombok.Getter;
 
 import java.util.List;
 
-//TODO Add javadoc once Media templates (which also use Element, but with different fields) are done.
+/**
+ * Used for creating generic elements for templates.
+ */
 public class GenericElement {
     @Getter
     private final String title; //Mandatory along with 1 more field | 80 character limit (the rest will get shortened with ...)

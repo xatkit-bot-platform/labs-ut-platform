@@ -2,6 +2,9 @@ package com.xatkit.plugins.messenger.platform.entity.buttons;
 
 import lombok.Getter;
 
+/**
+ * When user clicks a postback button a postback webhook will be sent to the chatbot.
+ */
 public class PostbackButton extends Button {
     @Getter
     private final String title; //20 char limit, rest gets shotened with ...

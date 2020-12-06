@@ -2,18 +2,19 @@ package com.xatkit.plugins.messenger.platform;
 
 import com.google.gson.JsonElement;
 import com.xatkit.core.XatkitBot;
+import com.xatkit.core.XatkitException;
 import com.xatkit.core.platform.RuntimePlatform;
 import com.xatkit.core.server.*;
 import com.xatkit.execution.StateContext;
 import com.xatkit.plugins.messenger.platform.action.*;
 import com.xatkit.plugins.messenger.platform.entity.*;
 import com.xatkit.plugins.messenger.platform.entity.payloads.AttachmentIdPayload;
-import com.xatkit.plugins.messenger.platform.entity.response.ErrorResponse;
-import com.xatkit.plugins.messenger.platform.entity.response.Response;
-import com.xatkit.plugins.messenger.platform.entity.response.SendResponse;
+import com.xatkit.plugins.messenger.platform.entity.response.MessengerException;
+import com.xatkit.plugins.messenger.platform.entity.response.MessengerResponse;
 import com.xatkit.plugins.rest.platform.RestPlatform;
 import com.xatkit.plugins.rest.platform.action.JsonRestRequest;
 import com.xatkit.plugins.rest.platform.utils.ApiResponse;
+import lombok.Getter;
 import lombok.NonNull;
 import fr.inria.atlanmod.commons.log.Log;
 import lombok.val;
@@ -24,17 +25,18 @@ import org.apache.http.HttpStatus;
 import org.apache.http.entity.StringEntity;
 
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 
 import static java.util.Objects.requireNonNull;
-
-// TODO: Add javadocs
 
 /**
  * A {@link RuntimePlatform} class that connects and interacts with the Messenger API.
  */
 public class MessengerPlatform extends RestPlatform {
     private String verifyToken;
+    @Getter
     private String accessToken;
+    @Getter
     private String appSecret;
 
     @Override
@@ -59,61 +61,185 @@ public class MessengerPlatform extends RestPlatform {
                 }));
     }
 
-    public Response markSeen(@NonNull StateContext context) {
+    /**
+     * Mark messages as seen
+     *
+     * @param context the current {@link StateContext}
+     * @return the {@link MessengerResponse}
+     */
+    public MessengerResponse markSeen(@NonNull StateContext context) {
         return sendAction(context, SenderAction.markSeen);
     }
 
-    public Response sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
+    /**
+     * Send an action. Actions: "mark_seen", "typing_on" or "typing_off".
+     *
+     * @param context      the current {@link StateContext}
+     * @param senderAction the {@link SenderAction}
+     * @return the {@link MessengerResponse}
+     */
+    public MessengerResponse sendAction(@NonNull StateContext context, @NonNull SenderAction senderAction) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("Replying to {0} with a sender_action {1}", recipientId, senderAction.name());
         val messaging = new Messaging(new Recipient(recipientId), senderAction);
         return reply(new Reply(this, context, messaging));
     }
 
-    public Response uploadFile(@NonNull StateContext context, File file) {
+    /**
+     * Upload a file. This won't actually send the file to the user.
+     * Instead response will have an id of the attachment that can be sent to the user with {@link #sendFile(StateContext, File)}  sendFile} method.
+     * Curretly, the attachment_id is also added to the {@link File}.
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param context the current {@link StateContext}
+     * @param file    the {@link File}
+     * @return the {@link MessengerResponse}
+     */
+    public MessengerResponse uploadFile(@NonNull StateContext context, File file) {
         return excecuteRequest(new FileReply(this, context, file));
     }
 
-    public Response sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
+    /**
+     * Send attachment with a given id. You can get the id after uploading the file with {@link #uploadFile(StateContext, File) uploadFile} method
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param context        the current {@link StateContext}
+     * @param attachmentId   id of the attachment to be sent.
+     * @param attachmentType the {@link com.xatkit.plugins.messenger.platform.entity.Attachment.AttachmentType AttachmentType}
+     * @return the {@link MessengerResponse}
+     */
+    public MessengerResponse sendFile(@NonNull StateContext context, @NonNull String attachmentId, @NonNull Attachment.AttachmentType attachmentType) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         val messaging = new Messaging(
                 new Recipient(recipientId),
                 new Message(new Attachment(attachmentType, new AttachmentIdPayload(attachmentId))));
         Log.debug("SENDING FILE TO: {0}", recipientId);
-        return reply(new Reply(this, context, messaging)
-        );
+        return reply(new MessageReply(this, context, messaging));
     }
 
-    public Response sendFile(@NonNull StateContext context, @NonNull File file) {
-        var attachmentId = file.getAttachmentId(); //I did not use the custom extractContextId here, so this is a potential error place
-        if (StringUtils.isEmpty(attachmentId)) {
+    /**
+     * Sends {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
+     * Otherwise assumes that the attachment_id of the file is correct and uses it to send the file.
+     * Calls {@link #sendFile(StateContext, File, boolean)}
+     *
+     * @param context the current {@link StateContext}
+     * @param file    the {@link File}
+     * @return the {@link MessengerResponse}
+     * @see #sendFile(StateContext, File, boolean)
+     * @see #sendFile(StateContext, String, Attachment.AttachmentType)
+     */
+    public MessengerResponse sendFile(@NonNull StateContext context, @NonNull File file) {
+        return sendFile(context, file, false);
+    }
+
+    /**
+     * Sends the {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
+     * If reupload is true, always uploads the file, otherwise assumes that the attachment_id present in the {@link File} is correct.
+     * Calls {@link #sendFile(StateContext, String, Attachment.AttachmentType)}.
+     *
+     * @param context  the current {@link StateContext}
+     * @param file     the {@link File}
+     * @param reupload whether to reupload the file or not.
+     * @return the {@link MessengerResponse}
+     * @see #sendFile(StateContext, String, Attachment.AttachmentType)
+     */
+    public MessengerResponse sendFile(@NonNull StateContext context, @NonNull File file, boolean reupload) {
+        var attachmentId = file.getAttachmentId();
+        if (StringUtils.isEmpty(attachmentId) || reupload) {
             val response = uploadFile(context, file);
-            if (!(response instanceof SendResponse)) {
-                Log.error("Could not upload the file.");
-                return response;
-            }
-            attachmentId = ((SendResponse) response).getAttachmentId();
+            attachmentId = response.getAttachmentId();
         }
 
         return sendFile(context, attachmentId, file.getAttachment().getType());
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull String text) {
+    /**
+     * Sends a message with given text with the option to turn on naturalization.
+     * Wraps the text in {@link Message} and calls {@link #reply(StateContext, Message)}
+     *
+     * @param context    the current {@link StateContext}
+     * @param text       text to send as a message.
+     * @param naturalize used to turn on text naturalization.
+     * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
+     */
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull String text, boolean naturalize) {
+        if (naturalize && getConfiguration().getBoolean(MessengerUtils.NATURALIZE_TEXT, false)) {
+            text = TextNaturalizer.get().naturalize(text);
+        }
+        return reply(context, text);
+    }
+
+    /**
+     * Sends a message with given text.
+     * Wraps the text in {@link Message} and calls {@link #reply(StateContext, Message)}
+     *
+     * @param context the current {@link StateContext}
+     * @param text    text to send as a message.
+     * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
+     */
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull String text) {
         return reply(context, new Message(text));
     }
 
-    public Response reply(@NonNull StateContext context, @NonNull Message message) {
+    /**
+     * Sends a message with given attachment.
+     * Wraps the attachment in {@link Message} and calls {@link #reply(StateContext, Message)}
+     *
+     * @param context    the current {@link StateContext}
+     * @param attachment attachment to send as a message.
+     * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
+     */
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull Attachment attachment) {
+        return reply(context, new Message(attachment));
+    }
+
+    /**
+     * Sends a {@link Message}.
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param context the current {@link StateContext}
+     * @param message {@link Message} to be sent.
+     * @return the {@link MessengerResponse}
+     */
+    public MessengerResponse reply(@NonNull StateContext context, @NonNull Message message) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("REPLYING TO: {0}", recipientId);
         val messaging = new Messaging(new Recipient(recipientId), message);
         return reply(new MessageReply(this, context, messaging));
     }
 
-    private Response reply(@NonNull Reply reply) {
+    /**
+     * Sends a {@link Reply}.
+     *
+     * @param reply {@link Reply} to be sent.
+     * @return the {@link MessengerResponse}
+     */
+    private MessengerResponse reply(@NonNull Reply reply) {
         return excecuteRequest(reply);
     }
 
-    private Response excecuteRequest(JsonRestRequest<JsonElement> request) {
+    /**
+     * Excecutes a request.
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param request request to be sent.
+     * @return the {@link MessengerResponse}
+     */
+    private MessengerResponse excecuteRequest(JsonRestRequest<JsonElement> request) {
         val result = request.call().getResult();
 
         if (result instanceof ApiResponse) {
@@ -128,25 +254,18 @@ public class MessengerPlatform extends RestPlatform {
                     val subcode = error.has("error_subcode") ? error.get("error_subcode").getAsInt() : null;
                     val fbtraceId = error.has("fbtrace_id") ? error.get("fbtrace_id").getAsString() : null;
                     val message = error.has("message") ? error.get("message").getAsString() : null;
-                    return new ErrorResponse(status, code, subcode, fbtraceId, message);
+                    throw new MessengerException(status, code, subcode, fbtraceId, message);
                 }
-                return null;
+                throw new XatkitException(apiResponse.getStatusText());
             }
             Log.debug("REPLY RESPONSE STATUS: {0} {1}\n BODY: {2}", apiResponse.getStatus(), apiResponse.getStatusText(), apiResponse.getBody().toString());
             val recipientId = responseBody.has("recipient_id") ? responseBody.get("recipient_id").getAsString() : null;
             val attachmentId = responseBody.has("attachment_id") ? responseBody.get("attachment_id").getAsString() : null;
             val messageId = responseBody.has("message_id") ? responseBody.get("message_id").getAsString() : null;
-            return new SendResponse(status, recipientId, messageId, attachmentId);
+            return new MessengerResponse(status, recipientId, messageId, attachmentId);
         }
-        Log.error("Unexpected reply result: {0}", result);
-        return null;
-    }
-
-    public String getAppSecret() {
-        return appSecret;
-    }
-
-    public String getAccessToken() {
-        return accessToken;
+        val error_message = MessageFormat.format("Unexpected reply result: {0}", result);
+        Log.error(error_message);
+        throw new XatkitException(error_message);
     }
 }

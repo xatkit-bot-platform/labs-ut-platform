@@ -1,15 +1,13 @@
-package com.xatkit.plugins.messenger.platform.entity.TemplateGenerators;
+package com.xatkit.plugins.messenger.platform.entity.templates;
 
 import com.xatkit.plugins.messenger.platform.entity.buttons.Button;
 import com.xatkit.plugins.messenger.platform.entity.buttons.PostbackButton;
 import com.xatkit.plugins.messenger.platform.entity.buttons.URLButton;
 import com.xatkit.plugins.messenger.platform.entity.buttons.WebviewHeightRatio;
 import com.xatkit.plugins.messenger.platform.entity.payloads.ButtonTemplatePayload;
-import com.xatkit.plugins.messenger.platform.entity.payloads.GenericTemplatePayload;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ButtonTemplate {
 

@@ -8,6 +8,9 @@ import lombok.Setter;
 import java.io.IOException;
 import java.nio.file.Files;
 
+/**
+ * Used for uploading files.
+ */
 public class File {
     @Getter
     private final Attachment attachment;

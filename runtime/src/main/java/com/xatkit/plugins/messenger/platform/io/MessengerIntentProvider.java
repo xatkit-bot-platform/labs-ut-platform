@@ -7,7 +7,6 @@ import com.xatkit.core.platform.io.WebhookEventProvider;
 import com.xatkit.core.recognition.IntentRecognitionProviderException;
 import com.xatkit.core.server.RestHandlerException;
 import com.xatkit.dsl.DSL;
-import com.xatkit.execution.State;
 import com.xatkit.execution.StateContext;
 import com.xatkit.intent.EventDefinition;
 import com.xatkit.intent.EventInstance;
@@ -51,7 +50,6 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
     public static EventDefinition MessagePostback = DSL.event("Message_Postback").getEventDefinition();
 
 
-
     /**
      * Constructs a {@link MessengerIntentProvider} and binds it to the provided {@code platform}.
      *
@@ -84,6 +82,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 Log.debug("Received content.");
                 try {
                     checkArgument(nonNull(content), "Missing content.");
+                    //logEntity(headers,params, content.getRawContent());
                     verifyValidation(headers, content.getRawContent());
 
                     requireNonNull(content.getJsonElement().getAsJsonObject().get("entry"), "Missing entry.")
@@ -98,6 +97,27 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         };
     }
 
+    private void logEntity(List<Header> headers, List<NameValuePair> params, final String jsonConent) {
+        Log.debug("HTTP ENTITY");
+        Log.debug("Headers");
+        for (Header header : headers) {
+            Log.debug("{0} : {1}", header.getName(), header.getValue());
+        }
+        Log.debug("Parameters");
+        for (NameValuePair nameValuePair : params) {
+            Log.debug("{0} : {1}", nameValuePair.getName(), nameValuePair.getValue());
+        }
+        Log.debug("Content : {0}", jsonConent);
+        Log.debug("END OF HTTP ENTITY");
+    }
+
+    /**
+     * Verifies if the request sent to the endpoint contains a valid signature.
+     *
+     * @param headers the headers sent with the request
+     * @param content the raw content of the request
+     * @throws RestHandlerException if the request is invalid
+     */
     private void verifyValidation(final List<Header> headers, final String content) throws RestHandlerException, InvalidKeyException, NoSuchAlgorithmException {
         for (Header header : headers) {
             if (header.getName().equals("X-Hub-Signature") && header.getElements()[0].getName().equals("sha1")) {
@@ -110,19 +130,29 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Incoming JSON has no validation code");
     }
 
-    private void handleEntry(final JsonElement jsonElement) {
-        if (!jsonElement.isJsonObject()) {
+    /**
+     * Handles the json entry containing messaging
+     *
+     * @param entry - JsonElement of the entry
+     */
+    private void handleEntry(final JsonElement entry) {
+        if (!entry.isJsonObject()) {
             return;
         }
-        val jsonObject = jsonElement.getAsJsonObject();
-        if (!jsonObject.has("messaging")) {
+        val entryObject = entry.getAsJsonObject();
+        if (!entryObject.has("messaging")) {
             return;
         }
-        jsonObject.get("messaging")
+        entryObject.get("messaging")
                 .getAsJsonArray()
                 .forEach(this::handleMessaging);
     }
 
+    /**
+     * Handles the messaging json element
+     *
+     * @param messaging JsonElement of the entry
+     */
     private void handleMessaging(JsonElement messaging) {
         val messagingJsonObject = messaging.getAsJsonObject();
 
@@ -132,14 +162,21 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val context = this.xatkitBot.getOrCreateContext(id);
 
         if (checkConfig(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
-            this.getRuntimePlatform().markSeen(context);
+            Log.warn("Won't be supported by Facebook for European users since 16th of December 2020.");
+            try {
+                this.getRuntimePlatform().markSeen(context);
+            } catch (XatkitException e) {
+                Log.error(e, "Automatic mark as seen threw an exception (since it is an experimental feature, this might be expected)");
+            }
         }
 
         if (checkConfig(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleDelivery(messagingJsonObject.get("delivery"), context);
         }
 
-        if (checkConfig(MessengerUtils. HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
+        if (checkConfig(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleRead(messagingJsonObject.get("read"), context);
         }
 
@@ -152,21 +189,30 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         }
 
         if (checkConfig(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleReaction(messagingJsonObject.get("reaction"), context);
         }
     }
 
+    /**
+     * Handles the postback json element
+     *
+     * @param postback postback JsonElement
+     * @param context  messaging context with id equal to sender id
+     */
     private void handlePostback(JsonElement postback, StateContext context) {
         val postbackObject = postback.getAsJsonObject();
-        EventInstance eventInstance = null;
+        EventInstance eventInstance;
         if (checkConfig(MessengerUtils.INTENT_FROM_POSTBACK, false)) {
             String text = null;
-            if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_TITLE_TEXT, false)) {
+            if (postbackObject.has("title") && checkConfig(MessengerUtils.USE_POSTBACK_TITLE_TEXT, false)) {
                 text = postbackObject.get("title").getAsString();
             } else if (postbackObject.has("emoji")) {
                 text = postbackObject.get("emoji").getAsString();
             }
-            if (postbackObject.has("payload")) { text = postbackObject.get("payload").getAsString(); }
+            if (postbackObject.has("payload")) {
+                text = postbackObject.get("payload").getAsString();
+            }
             eventInstance = produceIntentFromRawText(text, context);
         } else {
             eventInstance = IntentFactory.eINSTANCE.createEventInstance();
@@ -181,19 +227,26 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
             eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_PAYLOAD_KEY, payload);
         }
 
-        if (postbackObject.has("refferal")) {
-            val refferal = postbackObject.get("refferal").getAsJsonObject();
-            val ref = refferal.get("ref").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_REF_KEY, ref);
-            val source = refferal.get("source").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_SOURCE_KEY, source);
-            val type = refferal.get("type").getAsString();
-            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFFERAL_TYPE_KEY, type);
+        if (postbackObject.has("referral")) {
+            val referral = postbackObject.get("referral").getAsJsonObject();
+            val ref = referral.get("ref").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_REF_KEY, ref);
+            val source = referral.get("source").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_SOURCE_KEY, source);
+            val type = referral.get("type").getAsString();
+            eventInstance.getPlatformData().put(MessengerUtils.POSTBACK_REFERRAL_TYPE_KEY, type);
         }
 
         sendEventInstance(eventInstance, context);
     }
 
+    /**
+     * Handles the delivery json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
+     *
+     * @param delivery delivery JsonElement
+     * @param context  messaging context with id equal to sender id
+     */
     private void handleDelivery(JsonElement delivery, StateContext context) {
         val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
         eventInstance.setDefinition(MessageDelivered);
@@ -208,6 +261,13 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         sendEventInstance(eventInstance, context);
     }
 
+    /**
+     * Handles the read json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
+     *
+     * @param read    read JsonElement
+     * @param context messaging context with id equal to sender id
+     */
     private void handleRead(JsonElement read, StateContext context) {
         val eventInstance = IntentFactory.eINSTANCE.createEventInstance();
         eventInstance.setDefinition(MessageRead);
@@ -216,6 +276,12 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         sendEventInstance(eventInstance, context);
     }
 
+    /**
+     * Handles the message json element
+     *
+     * @param message message JsonElement
+     * @param context messaging context with id equal to sender id
+     */
     private void handleMessage(JsonElement message, StateContext context) {
         val messageJsonObject = message.getAsJsonObject();
 
@@ -230,9 +296,16 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         sendEventInstance(eventInstance, context);
     }
 
+    /**
+     * Handles the reaction json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
+     *
+     * @param reactionElement postback JsonElement
+     * @param context         messaging context with id equal to sender id
+     */
     private void handleReaction(JsonElement reactionElement, StateContext context) {
         val reactionJsonObject = reactionElement.getAsJsonObject();
-        EventInstance eventInstance = null;
+        EventInstance eventInstance;
         if (checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) {
             String text = null;
             if (reactionJsonObject.has("reaction") && checkConfig(MessengerUtils.USE_REACTION_TEXT, false)) {
@@ -261,8 +334,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
                 val reaction = reactionJsonObject.get("reaction").getAsString();
                 eventInstance.getPlatformData().put(MessengerUtils.REACTION_KEY, reaction);
             }
-        }
-        else if (action.equals("unreact")) {
+        } else if (action.equals("unreact")) {
             if (!checkConfig(MessengerUtils.INTENT_FROM_REACTION, false)) eventInstance.setDefinition(MessageUnreact);
         } else {
             throw new XatkitException("Unrecognised action");
@@ -272,6 +344,13 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         sendEventInstance(eventInstance, context);
     }
 
+    /**
+     * Creates intent from raw text.
+     *
+     * @param text    text to create the intent from
+     * @param context messaging context with id equal to sender id
+     * @return intent recognized from the raw text
+     */
     private EventInstance produceIntentFromRawText(String text, StateContext context) {
         Log.debug("Recognizing intention from text \"{0}\"", text);
         try {
@@ -284,6 +363,15 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         }
     }
 
+    /**
+     * Checks the runtime platform for configuration with a given key and returns it's value (boolean)
+     * If such configuration node does not exist, returs the default value given.
+     * Nodes checked must have a boolean value.
+     *
+     * @param configuration configuration node key to check
+     * @param miss          default value to return when key is not present
+     * @return boolean configuration value of the given key or miss parameter value if key not found.
+     */
     private boolean checkConfig(String configuration, boolean miss) {
         return runtimePlatform.getConfiguration().getBoolean(configuration, miss);
     }

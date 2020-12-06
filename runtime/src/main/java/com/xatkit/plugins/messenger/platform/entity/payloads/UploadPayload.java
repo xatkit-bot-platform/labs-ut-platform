@@ -3,6 +3,9 @@ package com.xatkit.plugins.messenger.platform.entity.payloads;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
+/**
+ * Payload for uploading a file with url.
+ */
 public class UploadPayload implements Payload {
     @Getter
     private final String url;
