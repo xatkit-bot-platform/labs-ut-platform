@@ -89,6 +89,10 @@ public class MessengerPlatform extends RestPlatform {
      * Upload a file. This won't actually send the file to the user.
      * Instead response will have an id of the attachment that can be sent to the user with {@link #sendFile(StateContext, File)}  sendFile} method.
      * Curretly, the attachment_id is also added to the {@link File}.
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
      *
      * @param context the current {@link StateContext}
      * @param file    the {@link File}
@@ -100,6 +104,10 @@ public class MessengerPlatform extends RestPlatform {
 
     /**
      * Send attachment with a given id. You can get the id after uploading the file with {@link #uploadFile(StateContext, File) uploadFile} method
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
      *
      * @param context        the current {@link StateContext}
      * @param attachmentId   id of the attachment to be sent.
@@ -118,10 +126,13 @@ public class MessengerPlatform extends RestPlatform {
     /**
      * Sends {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
      * Otherwise assumes that the attachment_id of the file is correct and uses it to send the file.
+     * Calls {@link #sendFile(StateContext, File, boolean)}
      *
      * @param context the current {@link StateContext}
      * @param file    the {@link File}
      * @return the {@link MessengerResponse}
+     * @see #sendFile(StateContext, File, boolean)
+     * @see #sendFile(StateContext, String, Attachment.AttachmentType)
      */
     public MessengerResponse sendFile(@NonNull StateContext context, @NonNull File file) {
         return sendFile(context, file, false);
@@ -130,11 +141,13 @@ public class MessengerPlatform extends RestPlatform {
     /**
      * Sends the {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
      * If reupload is true, always uploads the file, otherwise assumes that the attachment_id present in the {@link File} is correct.
+     * Calls {@link #sendFile(StateContext, String, Attachment.AttachmentType)}.
      *
      * @param context  the current {@link StateContext}
      * @param file     the {@link File}
      * @param reupload whether to reupload the file or not.
      * @return the {@link MessengerResponse}
+     * @see #sendFile(StateContext, String, Attachment.AttachmentType)
      */
     public MessengerResponse sendFile(@NonNull StateContext context, @NonNull File file, boolean reupload) {
         var attachmentId = file.getAttachmentId();
@@ -148,11 +161,13 @@ public class MessengerPlatform extends RestPlatform {
 
     /**
      * Sends a message with given text with the option to turn on naturalization.
+     * Wraps the text in {@link Message} and calls {@link #reply(StateContext, Message)}
      *
-     * @param context  the current {@link StateContext}
-     * @param text text to send as a message.
+     * @param context    the current {@link StateContext}
+     * @param text       text to send as a message.
      * @param naturalize used to turn on text naturalization.
      * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
      */
     public MessengerResponse reply(@NonNull StateContext context, @NonNull String text, boolean naturalize) {
         if (naturalize && getConfiguration().getBoolean(MessengerUtils.NATURALIZE_TEXT, false)) {
@@ -163,19 +178,40 @@ public class MessengerPlatform extends RestPlatform {
 
     /**
      * Sends a message with given text.
+     * Wraps the text in {@link Message} and calls {@link #reply(StateContext, Message)}
      *
-     * @param context  the current {@link StateContext}
-     * @param text text to send as a message.
+     * @param context the current {@link StateContext}
+     * @param text    text to send as a message.
      * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
      */
     public MessengerResponse reply(@NonNull StateContext context, @NonNull String text) {
         return reply(context, new Message(text));
     }
 
+    /**
+     * Sends a message with given attachment.
+     * Wraps the attachment in {@link Message} and calls {@link #reply(StateContext, Message)}
+     *
+     * @param context    the current {@link StateContext}
+     * @param attachment attachment to send as a message.
+     * @return the {@link MessengerResponse}
+     * @see #reply(StateContext, Message)
+     */
     public MessengerResponse reply(@NonNull StateContext context, @NonNull Attachment attachment) {
         return reply(context, new Message(attachment));
     }
 
+    /**
+     * Sends a {@link Message}.
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param context the current {@link StateContext}
+     * @param message {@link Message} to be sent.
+     * @return the {@link MessengerResponse}
+     */
     public MessengerResponse reply(@NonNull StateContext context, @NonNull Message message) {
         val recipientId = MessengerUtils.extractContextId(context.getContextId());
         Log.debug("REPLYING TO: {0}", recipientId);
@@ -183,10 +219,26 @@ public class MessengerPlatform extends RestPlatform {
         return reply(new MessageReply(this, context, messaging));
     }
 
+    /**
+     * Sends a {@link Reply}.
+     *
+     * @param reply {@link Reply} to be sent.
+     * @return the {@link MessengerResponse}
+     */
     private MessengerResponse reply(@NonNull Reply reply) {
         return excecuteRequest(reply);
     }
 
+    /**
+     * Excecutes a request.
+     * <p>
+     * If a request is successfully sent returns a {@link MessengerResponse}.
+     * If an error response is received from Facebook throws a {@link MessengerException}
+     * If an unknown error is encountered throws a {@link XatkitException}
+     *
+     * @param request request to be sent.
+     * @return the {@link MessengerResponse}
+     */
     private MessengerResponse excecuteRequest(JsonRestRequest<JsonElement> request) {
         val result = request.call().getResult();
 

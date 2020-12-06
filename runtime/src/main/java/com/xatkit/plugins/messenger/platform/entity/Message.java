@@ -3,6 +3,11 @@ package com.xatkit.plugins.messenger.platform.entity;
 import com.xatkit.plugins.messenger.platform.entity.payloads.UploadPayload;
 import lombok.Getter;
 
+/**
+ * Used for creating a message containing text or an attachment
+ * @see Messaging
+ * @see Attachment
+ */
 public class Message {
 
     @Getter

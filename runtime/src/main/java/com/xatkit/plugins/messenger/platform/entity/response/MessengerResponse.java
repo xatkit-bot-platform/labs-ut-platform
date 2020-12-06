@@ -5,6 +5,9 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
+/**
+ * Response from Facebook after successfully sending a request.
+ */
 public class MessengerResponse {
     @Getter
     private final String recipientId;

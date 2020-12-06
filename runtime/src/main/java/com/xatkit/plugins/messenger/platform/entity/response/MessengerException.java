@@ -3,6 +3,9 @@ package com.xatkit.plugins.messenger.platform.entity.response;
 import com.xatkit.core.XatkitException;
 import lombok.Getter;
 
+/**
+ * An exception containing error information from Facebook
+ */
 public class MessengerException extends XatkitException {
     @Getter
     private final Integer status;

@@ -3,6 +3,14 @@ package com.xatkit.plugins.messenger.platform.entity;
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
 
+/**
+ * Used for creating a messaging object sent to Facebook.
+ * This might contain a message or a sender action.
+ * Sender actions "typing_on" and "typing_off" won't be supported by Facebook for European users
+ * since 16th of December 2020.
+ * @see Message
+ * @see SenderAction
+ */
 public class Messaging {
     @Getter
     private final Recipient recipient;

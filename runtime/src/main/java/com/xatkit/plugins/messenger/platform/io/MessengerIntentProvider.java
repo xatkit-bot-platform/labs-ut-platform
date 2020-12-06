@@ -162,6 +162,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         val context = this.xatkitBot.getOrCreateContext(id);
 
         if (checkConfig(MessengerUtils.AUTO_MARK_SEEN_KEY, false)) {
+            Log.warn("Won't be supported by Facebook for European users since 16th of December 2020.");
             try {
                 this.getRuntimePlatform().markSeen(context);
             } catch (XatkitException e) {
@@ -170,10 +171,12 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         }
 
         if (checkConfig(MessengerUtils.HANDLE_DELIVERIES_KEY, false) && messagingJsonObject.has("delivery")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleDelivery(messagingJsonObject.get("delivery"), context);
         }
 
         if (checkConfig(MessengerUtils.HANDLE_READ_KEY, false) && messagingJsonObject.has("read")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleRead(messagingJsonObject.get("read"), context);
         }
 
@@ -186,6 +189,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
         }
 
         if (checkConfig(MessengerUtils.HANDLE_REACTIONS_KEY, false) && messagingJsonObject.has("reaction")) {
+            // Won't be supported by Facebook for European users since 16th of December 2020.
             handleReaction(messagingJsonObject.get("reaction"), context);
         }
     }
@@ -238,6 +242,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     /**
      * Handles the delivery json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param delivery delivery JsonElement
      * @param context  messaging context with id equal to sender id
@@ -258,6 +263,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     /**
      * Handles the read json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param read    read JsonElement
      * @param context messaging context with id equal to sender id
@@ -292,6 +298,7 @@ public class MessengerIntentProvider extends WebhookEventProvider<MessengerPlatf
 
     /**
      * Handles the reaction json element
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param reactionElement postback JsonElement
      * @param context         messaging context with id equal to sender id

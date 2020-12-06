@@ -6,6 +6,9 @@ import lombok.Getter;
 
 import java.util.List;
 
+/**
+ * Used for creating media elements for templates.
+ */
 public class MediaElement {
     @SerializedName(value = "media_type")
     @Getter
