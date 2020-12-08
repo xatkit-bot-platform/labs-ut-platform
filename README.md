@@ -1,7 +1,7 @@
 Xatkit Facebook Messenger Platform
 =====
 
-[![Wiki Badge](https://img.shields.io/badge/doc-wiki-blue)](https://github.com/xatkit-bot-platform/xatkit-facebook-messenger-platform/wiki)
+[![Wiki Badge](https://img.shields.io/badge/doc-wiki-blue)](https://github.com/xatkit-bot-platform/xatkit-facebook-messenger-platform/wiki)[![Build Status](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform.svg?branch=master)](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform)  
 
 Receive and send messages to [Facebook Messenger](https://www.messenger.com/).
 This connector utilizes the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform).
