@@ -1,7 +1,8 @@
 Xatkit Facebook Messenger Platform
 =====
 
-[![Wiki Badge](https://img.shields.io/badge/doc-wiki-blue)](https://github.com/xatkit-bot-platform/xatkit-facebook-messenger-platform/wiki)[![Build Status](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform.svg?branch=master)](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform)  
+[![Wiki Badge](https://img.shields.io/badge/doc-wiki-blue)](https://github.com/xatkit-bot-platform/xatkit-facebook-messenger-platform/wiki)
+[![Build Status](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform.svg?branch=master)](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform)  
 
 Receive and send messages to [Facebook Messenger](https://www.messenger.com/).
 This connector utilizes the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform).
@@ -14,13 +15,13 @@ This connector utilizes the [Messenger Platform API](https://developers.facebook
 
 ## MessengerIntentProvider Events
 
-| Event | Context | Parameters | Description |
-| ----- | ------- | ---------- | ----------- |
-| Message_Delivered | ? | - `mids`: The id of the delivered message | Event sent when a message is delivered. **Note**: this event is only created when the `xatkit.messenger.handle_deliveries` is set to `true`. |
-| Message_Read | ? | - `watermark`: The number of messages delivered | Event sent when the user sees a message. **Note**: this event is only created when the `xatkit.messenger.handle_read` is set to `true`. |
-| Message_React | ? | - `mid`: The id of the message reacted to<br/> - `emoji`: The Unicode character of the emoji<br/> - `reaction`: The natural language interpretation of the emoji | Event sent when the user reacts to a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
-| Message_Unreact | ? | - `mid`: The id of the message the reaction was removed from | Event sent when a reaction is removed from a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
-| Message_Postback | ? | - `title`: The displayed text of a postback button<br/> - `payload`: The payload of a postback button<br/> - `xatkit.messenger.postback.referral.ref`: The refferal ref attribute<br/> - `xatkit.messenger.postback.referral.source` The referral origin<br/> - `xatkit.messenger.postback.referral.type`: The refferal type | Event sent when the user click on a postback button in a button template. |
+| Event | Parameters | Description |
+| ----- | ---------- | ----------- |
+| Message_Delivered | - `mids`: The id of the delivered message | Event sent when a message is delivered. **Note**: this event is only created when the `xatkit.messenger.handle_deliveries` is set to `true`. |
+| Message_Read | - `watermark`: The number of messages delivered | Event sent when the user sees a message. **Note**: this event is only created when the `xatkit.messenger.handle_read` is set to `true`. |
+| Message_React | - `mid`: The id of the message reacted to<br/> - `emoji`: The Unicode character of the emoji<br/> - `reaction`: The natural language interpretation of the emoji | Event sent when the user reacts to a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
+| Message_Unreact | - `mid`: The id of the message the reaction was removed from | Event sent when a reaction is removed from a message. **Note**: this event is only created when the `xatkit.messenger.handle_reactions` is set to `true`. |
+| Message_Postback | - `title`: The displayed text of a postback button<br/> - `payload`: The payload of a postback button<br/> - `xatkit.messenger.postback.referral.ref`: The refferal ref attribute<br/> - `xatkit.messenger.postback.referral.source` The referral origin<br/> - `xatkit.messenger.postback.referral.type`: The refferal type | Event sent when the user click on a postback button in a button template. |
 
 ## Actions
 
