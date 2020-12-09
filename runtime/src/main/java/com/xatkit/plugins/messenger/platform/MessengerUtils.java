@@ -33,26 +33,36 @@ public class MessengerUtils {
 
     /**
      * Create intent from reaction if true, otherwise use events. Value type: boolean
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      */
+    @Deprecated
     public static final String INTENT_FROM_REACTION = MESSENGER_CONTEXT + "intent_from_reaction";
     /**
      * If true use reaction text to create an intent otherwise uses emoji. Value type: boolean
      * Requires INTENT_FROM_REACTION to be true to work.
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      */
+    @Deprecated
     public static final String USE_REACTION_TEXT = MESSENGER_CONTEXT + "use_reaction_text";
 
 
     /**
      * Whether to handle reactions or not. Value type: boolean
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      */
+    @Deprecated
     public static final String HANDLE_REACTIONS_KEY = MESSENGER_CONTEXT + "handle_reactions";
     /**
      * Whether to handle deliveries or not. Value type: boolean
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      */
+    @Deprecated
     public static final String HANDLE_DELIVERIES_KEY = MESSENGER_CONTEXT + "handle_deliveries";
     /**
      * Whether to handle reads or not. Value type: boolean
+     * Won't be supported by Facebook for European users since 16th of December 2020.
      */
+    @Deprecated
     public static final String HANDLE_READ_KEY = MESSENGER_CONTEXT + "handle_read";
 
     // EXPERIMENTAL FEATURES
@@ -60,6 +70,7 @@ public class MessengerUtils {
      * If true automatically marks received messages as seen. Value type: boolean
      */
     public static final String AUTO_MARK_SEEN_KEY = MESSENGER_CONTEXT + "auto_seen";
+
     public static final String NATURALIZE_TEXT = MESSENGER_CONTEXT + "naturalize_text";
 
     // INTENT PLATFORM DATA KEYS

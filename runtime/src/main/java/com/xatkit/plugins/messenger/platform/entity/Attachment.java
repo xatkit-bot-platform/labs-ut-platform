@@ -19,14 +19,17 @@ public class Attachment {
 
     // TODO: Support files and templates as well
     public enum AttachmentType {
+        @Deprecated
         @SerializedName("audio")
         audio,
+        @Deprecated
         @SerializedName("video")
         video,
         @SerializedName("image")
         image,
         @SerializedName("template")
         template,
+        @Deprecated
         @SerializedName("file")
         file
     }

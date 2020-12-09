@@ -55,7 +55,7 @@ public class MessengerPlatform extends RestPlatform {
                         throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Mode is not 'subscribe'");
                     }
                     if (!token.equals(verifyToken)) {
-                        throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Token does not match verify token.");
+                        throw new RestHandlerException(HttpStatus.SC_FORBIDDEN, "Received token does not match the verify token.");
                     }
                     return new StringEntity(challenge, StandardCharsets.UTF_8);
                 }));
@@ -73,6 +73,8 @@ public class MessengerPlatform extends RestPlatform {
 
     /**
      * Send an action. Actions: "mark_seen", "typing_on" or "typing_off".
+     * Sender actions "typing_on" and "typing_off" won't be supported by Facebook for European users
+     * since 16th of December 2020.
      *
      * @param context      the current {@link StateContext}
      * @param senderAction the {@link SenderAction}
@@ -93,6 +95,9 @@ public class MessengerPlatform extends RestPlatform {
      * If a request is successfully sent returns a {@link MessengerResponse}.
      * If an error response is received from Facebook throws a {@link MessengerException}
      * If an unknown error is encountered throws a {@link XatkitException}
+     * <p>
+     * Media/attachment (audio, video, files) other than images
+     * won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param context the current {@link StateContext}
      * @param file    the {@link File}
@@ -108,6 +113,9 @@ public class MessengerPlatform extends RestPlatform {
      * If a request is successfully sent returns a {@link MessengerResponse}.
      * If an error response is received from Facebook throws a {@link MessengerException}
      * If an unknown error is encountered throws a {@link XatkitException}
+     * <p>
+     * Media/attachment (audio, video, files) other than images
+     * won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param context        the current {@link StateContext}
      * @param attachmentId   id of the attachment to be sent.
@@ -127,6 +135,9 @@ public class MessengerPlatform extends RestPlatform {
      * Sends {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
      * Otherwise assumes that the attachment_id of the file is correct and uses it to send the file.
      * Calls {@link #sendFile(StateContext, File, boolean)}
+     * <p>
+     * Media/attachment (audio, video, files) other than images
+     * won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param context the current {@link StateContext}
      * @param file    the {@link File}
@@ -142,6 +153,9 @@ public class MessengerPlatform extends RestPlatform {
      * Sends the {@link File}. If the {@link File} doesn't have an attachment_id, then uploads the file and adds an attachment_id to it.
      * If reupload is true, always uploads the file, otherwise assumes that the attachment_id present in the {@link File} is correct.
      * Calls {@link #sendFile(StateContext, String, Attachment.AttachmentType)}.
+     * <p>
+     * Media/attachment (audio, video, files) other than images
+     * won't be supported by Facebook for European users since 16th of December 2020.
      *
      * @param context  the current {@link StateContext}
      * @param file     the {@link File}
