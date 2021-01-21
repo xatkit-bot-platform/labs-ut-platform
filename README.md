@@ -5,7 +5,7 @@ Xatkit Facebook Messenger Platform
 [![Build Status](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform.svg?branch=master)](https://travis-ci.com/xatkit-bot-platform/xatkit-facebook-messenger-platform)  
 
 Receive and send messages to [Facebook Messenger](https://www.messenger.com/).
-This connector utilizes the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform).
+This connector utilizes the [Messenger Platform API](https://developers.facebook.com/docs/messenger-platform). Installation [instructions available in the wiki](https://github.com/xatkit-bot-platform/xatkit/wiki/Xatkit-Facebook-Messenger-Platform).
 
 ## Providers
 
